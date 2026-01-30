@@ -19,6 +19,12 @@ export const adminAnalyticsApi = {
       topSellingProducts: any[];
       lowStockProducts: any[];
       recentOrders: any[];
+      chartData: {
+        date: string;
+        dateLabel: string;
+        orders: number;
+        revenue: number;
+      }[];
     }>("/api/admin/analytics"),
 };
 

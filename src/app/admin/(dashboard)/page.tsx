@@ -5,6 +5,14 @@ import { adminApi } from "@/lib/adminApi";
 import { DollarSign, ShoppingBag, Users, Package } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { formatPrice } from "@/lib/utils";
+import { AnalyticsChart } from "@/components/admin/AnalyticsChart";
+
+interface ChartDataPoint {
+  date: string;
+  dateLabel: string;
+  orders: number;
+  revenue: number;
+}
 
 interface Stats {
   overview: {
@@ -13,6 +21,12 @@ interface Stats {
     totalProducts: number;
     totalUsers: number;
   };
+  thisMonth: {
+    orders: number;
+    revenue: number;
+    growth: number;
+  };
+  chartData: ChartDataPoint[];
 }
 
 export default function AdminDashboard() {
@@ -101,12 +115,16 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {}
-      <div className="mt-12">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 min-h-[400px] flex items-center justify-center text-charcoal-500">
-          <p>Analytics charts and recent activity will appear here</p>
+
+      {/* Analytics Chart */}
+      {stats && stats.chartData && stats.chartData.length > 0 && (
+        <div className="mt-8">
+          <AnalyticsChart
+            data={stats.chartData}
+            growth={stats.thisMonth?.growth || 0}
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 }

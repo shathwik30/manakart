@@ -12,8 +12,9 @@ export async function GET() {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-    
+
     const [
       totalOrders,
       totalRevenue,
@@ -29,6 +30,7 @@ export async function GET() {
       topSellingProducts,
       lowStockProducts,
       recentOrders,
+      ordersLast30Days,
     ] = await Promise.all([
       
       prisma.order.count({
@@ -122,7 +124,7 @@ export async function GET() {
         },
       }),
 
-      
+
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -136,6 +138,19 @@ export async function GET() {
             select: { name: true },
           },
         },
+      }),
+
+
+      prisma.order.findMany({
+        where: {
+          paymentStatus: 'PAID',
+          createdAt: { gte: last30Days },
+        },
+        select: {
+          createdAt: true,
+          total: true,
+        },
+        orderBy: { createdAt: 'asc' },
       }),
     ])
 
@@ -170,13 +185,39 @@ export async function GET() {
       .filter((p: { totalStock: number }) => p.totalStock < 10)
       .slice(0, 5)
 
-    
+
     const lastMonthRev = lastMonthRevenue._sum.total || 0
     const thisMonthRev = monthRevenue._sum.total || 0
     const growth =
       lastMonthRev > 0
         ? Math.round(((thisMonthRev - lastMonthRev) / lastMonthRev) * 100)
         : 100
+
+
+    const dailyData: Record<string, { orders: number; revenue: number }> = {}
+    ordersLast30Days.forEach((order) => {
+      const dateKey = order.createdAt.toISOString().split('T')[0]
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = { orders: 0, revenue: 0 }
+      }
+      dailyData[dateKey].orders += 1
+      dailyData[dateKey].revenue += order.total
+    })
+
+
+    const chartData = []
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
+      const dateKey = date.toISOString().split('T')[0]
+      const dayData = dailyData[dateKey] || { orders: 0, revenue: 0 }
+
+      chartData.push({
+        date: dateKey,
+        dateLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        orders: dayData.orders,
+        revenue: dayData.revenue,
+      })
+    }
 
     return successResponse({
       overview: {
@@ -202,6 +243,7 @@ export async function GET() {
       topSellingProducts: topSellingWithDetails,
       lowStockProducts: lowStock,
       recentOrders,
+      chartData,
     })
   } catch (error) {
     logger.error('Admin analytics error', { error: error instanceof Error ? error.message : 'Unknown error' })
