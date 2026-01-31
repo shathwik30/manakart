@@ -7,6 +7,7 @@ import {
   CategoryShowcase,
   ReelsSection,
   Newsletter,
+  HomeWrapper,
 } from "@/components/home";
 import { landingService } from "@/lib/services/landing-service";
 
@@ -37,7 +38,7 @@ async function getHomePageData() {
 export default async function HomePage() {
   const { hero, reviews, reviewStats, reels } = await getHomePageData();
   return (
-    <>
+    <HomeWrapper>
       <Header />
       <Hero slides={hero} />
       <CategoryShowcase />
@@ -46,6 +47,6 @@ export default async function HomePage() {
       <Reviews reviews={reviews} stats={reviewStats} />
       <Newsletter />
       <Footer />
-    </>
+    </HomeWrapper>
   );
 }

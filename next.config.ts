@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 7,
     remotePatterns: [
       { protocol: "https", hostname: "**" },
-      { protocol: "http", hostname: "**" },
     ],
   },
   async headers() {
@@ -32,7 +31,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "",
   },
   turbopack: {},
 };

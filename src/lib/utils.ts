@@ -122,6 +122,11 @@ export function generateId(): string {
 }
 export const isClient = typeof window !== "undefined";
 export const isServer = typeof window === "undefined";
+
+export function toHttps(url: string | null | undefined): string {
+  if (!url) return "";
+  return url.replace(/^http:\/\//i, "https://");
+}
 export const storage = {
   get: <T>(key: string, defaultValue: T): T => {
     if (isServer) return defaultValue;

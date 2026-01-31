@@ -126,8 +126,8 @@ export function Hero({ slides }: HeroProps) {
         <>
           <motion.button
             onClick={goToPrev}
-            className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all z-10 group"
-            whileHover={{ scale: 1.1, x: -4 }}
+            className="absolute bottom-8 left-4 md:left-8 md:top-1/2 md:bottom-auto md:-translate-y-1/2 w-12 h-12 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all z-10 group"
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             aria-label="Previous slide"
           >
@@ -135,8 +135,8 @@ export function Hero({ slides }: HeroProps) {
           </motion.button>
           <motion.button
             onClick={goToNext}
-            className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all z-10 group"
-            whileHover={{ scale: 1.1, x: 4 }}
+            className="absolute bottom-8 right-4 md:right-8 md:top-1/2 md:bottom-auto md:-translate-y-1/2 w-12 h-12 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all z-10 group"
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             aria-label="Next slide"
           >

@@ -5,3 +5,5 @@ export * from "./Reviews";
 export * from "./CategoryShowcase";
 export * from "./ReelsSection";
 export * from "./Newsletter";
+export { default as VideoIntro } from "./VideoIntro";
+export { default as HomeWrapper } from "./HomeWrapper";

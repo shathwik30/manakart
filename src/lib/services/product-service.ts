@@ -1,5 +1,6 @@
 
 import prisma from '@/lib/prisma';
+import { toHttps } from '@/lib/utils';
 
 export interface GetProductsOptions {
   category?: string;
@@ -49,7 +50,7 @@ export const productService = {
     ]);
 
     return {
-      products,
+      products: products.map(p => ({ ...p, images: p.images.map(toHttps) })),
       pagination: {
         page,
         limit,
@@ -85,6 +86,7 @@ export const productService = {
     // Transform nulls to undefined and cast JSON types
     const transformedProduct = {
         ...product,
+        images: product.images.map(toHttps),
         description: product.description || undefined,
         sizeChart: (product.sizeChart as Record<string, Record<string, number>>) || undefined,
         stockPerSize: product.stockPerSize as Record<string, number>,

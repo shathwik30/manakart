@@ -1,5 +1,6 @@
 
 import prisma from "@/lib/prisma";
+import { toHttps } from "@/lib/utils";
 
 export const outfitService = {
   async getOutfits(params: { type?: string; featured?: boolean } = {}) {
@@ -41,6 +42,7 @@ export const outfitService = {
     const transformedOutfits = outfits.map((outfit) => {
       const products = outfit.items.map((item) => ({
         ...item.product,
+        images: item.product.images.map(toHttps),
         description: item.product.description || undefined,
         sizeChart: (item.product.sizeChart as Record<string, Record<string, number>>) || undefined,
         stockPerSize: item.product.stockPerSize as Record<string, number>,
@@ -51,7 +53,7 @@ export const outfitService = {
         slug: outfit.slug,
         genderType: outfit.genderType,
         description: outfit.description || undefined,
-        heroImages: outfit.heroImages,
+        heroImages: outfit.heroImages.map(toHttps),
         bundlePrice: outfit.bundlePrice,
         isFeatured: outfit.isFeatured,
         isActive: outfit.isActive,
@@ -103,13 +105,14 @@ export const outfitService = {
       slug: outfit.slug,
       genderType: outfit.genderType,
       description: outfit.description || undefined,
-      heroImages: outfit.heroImages,
+      heroImages: outfit.heroImages.map(toHttps),
       bundlePrice: outfit.bundlePrice,
       isFeatured: outfit.isFeatured,
       isActive: outfit.isActive,
       productCount: products.length,
       products: products.map(p => ({
         ...p,
+        images: p.images.map(toHttps),
         description: p.description || undefined,
         sizeChart: (p.sizeChart as Record<string, Record<string, number>>) || undefined,
         stockPerSize: p.stockPerSize as Record<string, number>,

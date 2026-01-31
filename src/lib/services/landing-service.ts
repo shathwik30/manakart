@@ -1,5 +1,6 @@
 
 import prisma from "@/lib/prisma";
+import { toHttps } from "@/lib/utils";
 
 export const landingService = {
   async getHeroContent() {
@@ -14,11 +15,13 @@ export const landingService = {
         ctaText: true,
         ctaLink: true,
         position: true,
-        isActive: true, // Required by HeroContent interface
-        createdAt: true, // Required by HeroContent interface
+        isActive: true,
+        createdAt: true,
       },
     });
-    return { heroContent };
+    return {
+      heroContent: heroContent.map(h => ({ ...h, image: toHttps(h.image) }))
+    };
   },
 
   async getReviews(options: { featured?: boolean; limit?: number } = {}) {
@@ -44,8 +47,9 @@ export const landingService = {
     // Transform to match Review interface
     const reviews = dbReviews.map(r => ({
       ...r,
-      comment: r.comment || undefined, // Convert null to undefined
-      createdAt: r.createdAt.toISOString(), // Convert Date to string
+      comment: r.comment || undefined,
+      media: r.media.map(toHttps),
+      createdAt: r.createdAt.toISOString(),
     }));
 
     const allReviews = await prisma.review.findMany({
@@ -105,6 +109,8 @@ export const landingService = {
 
     const reelsWithOutfits = reels.map((reel) => ({
       ...reel,
+      videoUrl: toHttps(reel.videoUrl),
+      thumbnail: reel.thumbnail ? toHttps(reel.thumbnail) : null,
       outfit: reel.outfitId ? outfitMap.get(reel.outfitId) || undefined : undefined,
     }));
 
