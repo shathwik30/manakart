@@ -8,21 +8,24 @@ import {
   ReelsSection,
   Newsletter,
 } from "@/components/home";
-import { landingApi } from "@/lib/api";
+import { landingService } from "@/lib/services/landing-service";
+
 async function getHomePageData() {
   try {
     const [heroData, reviewsData, reelsData] = await Promise.all([
-      landingApi.getHero().catch(() => null),
-      landingApi.getReviews({ featured: true, limit: 6 }).catch(() => null),
-      landingApi.getReels().catch(() => null),
+      landingService.getHeroContent(),
+      landingService.getReviews({ featured: true, limit: 6 }),
+      landingService.getReels(20),
     ]);
+
     return {
       hero: heroData?.heroContent || [],
       reviews: reviewsData?.reviews || [],
       reviewStats: reviewsData?.stats || { averageRating: 0, totalReviews: 0 },
       reels: reelsData?.reels || [],
     };
-  } catch {
+  } catch (error) {
+    console.error("Error loading home page data:", error);
     return {
       hero: [],
       reviews: [],
