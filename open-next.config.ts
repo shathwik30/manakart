@@ -4,6 +4,7 @@ const config: OpenNextConfig = {
   default: {
     override: {
       wrapper: "cloudflare",
+      converter: "edge",
     },
   },
 };

@@ -1,5 +1,5 @@
 name = "succession-ecommerce"
-main = ".open-next/worker.js"
+main = ".open-next/server-functions/default/index.mjs"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
