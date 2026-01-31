@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
     const cart = await prisma.cart.findFirst({
       where: {
         id: cartId,
-        userId: currentUser.userId,
+        OR: [
+          { userId: currentUser.userId },
+          { userId: null }
+        ]
       },
       include: {
         items: {
