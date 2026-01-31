@@ -40,7 +40,7 @@ export async function sendOTPEmail(email: string, otp: string): Promise<boolean>
     </head>
     <body>
       <div class="container">
-        <div class="logo">YOUR BRAND</div>
+        <div class="logo">Succession</div>
         <p class="message">Your verification code is:</p>
         <div class="otp-code">${otp}</div>
         <p class="message">This code will expire in 5 minutes. Do not share this code with anyone.</p>
@@ -89,7 +89,7 @@ export async function sendOrderConfirmationEmail(
     </head>
     <body>
       <div class="container">
-        <div class="logo">YOUR BRAND</div>
+        <div class="logo">Succession</div>
         <div class="order-number">Order ${orderNumber}</div>
         <p class="message">Thank you for your order. We're preparing your items with care.</p>
         <table>
