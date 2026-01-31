@@ -9,8 +9,13 @@ export default function AdminSidebar() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
   const handleLogout = async () => {
-    await logout();
-    router.push("/admin/login");
+    try {
+      await fetch("/api/admin/auth/logout", { method: "POST" });
+      await logout(); // Clear client state
+      window.location.href = "/admin/login"; // Hard redirect
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
   const navItems = [
     { name: "Overview", href: "/admin", icon: LayoutDashboard },

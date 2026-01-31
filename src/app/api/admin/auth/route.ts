@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       role: user.role,
     })
-    await setAuthCookie(token)
+    await setAuthCookie(token, 'admin_token')
     return successResponse({
       message: 'Admin logged in successfully',
       user: {

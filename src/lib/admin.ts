@@ -1,7 +1,7 @@
 import { getCurrentUser } from './auth'
 import { errorResponse } from './utils'
 export async function requireAdmin() {
-  const currentUser = await getCurrentUser()
+  const currentUser = await getCurrentUser("admin_token")
   if (!currentUser) {
     return { error: errorResponse('Unauthorized', 401), user: null }
   }

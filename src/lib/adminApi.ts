@@ -47,7 +47,7 @@ export const adminOrdersApi = {
   },
   getById: (id: string) => api<{ order: Order }>(`/api/admin/orders/${id}`),
   updateStatus: (id: string, status: string) =>
-    api<{ order: Order; message: string }>(`/api/admin/orders/${id}/status`, { method: "PATCH", body: { status } }),
+    api<{ order: Order; message: string }>(`/api/admin/orders/${id}`, { method: "PATCH", body: { orderStatus: status } }),
 };
 export const adminUsersApi = {
   getAll: (params?: { page?: number; limit?: number }) => {

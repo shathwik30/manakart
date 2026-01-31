@@ -59,4 +59,37 @@ export const productService = {
       },
     };
   },
+
+  async getProductBySlug(slug: string) {
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      select: {
+          id: true,
+          title: true,
+          slug: true,
+          category: true,
+          description: true,
+          basePrice: true,
+          images: true,
+          availableSizes: true,
+          stockPerSize: true,
+          isActive: true,
+          sizeChart: true,
+      }
+    });
+
+    if (!product) {
+        return { product: null };
+    }
+
+    // Transform nulls to undefined and cast JSON types
+    const transformedProduct = {
+        ...product,
+        description: product.description || undefined,
+        sizeChart: (product.sizeChart as Record<string, Record<string, number>>) || undefined,
+        stockPerSize: product.stockPerSize as Record<string, number>,
+    };
+
+    return { product: transformedProduct };
+  }
 };

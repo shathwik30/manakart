@@ -23,7 +23,8 @@ export default function AdminLogin() {
         throw new Error(data.error || "Login failed");
       }
       toast.success("Welcome back, Admin");
-      router.push("/admin");
+      // Force hard reload to ensure cookie is sent to middleware
+      window.location.href = "/admin";
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {

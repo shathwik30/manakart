@@ -1,27 +1,33 @@
 
 import { Header, Footer } from "@/components/layout";
 import { CollectionGrid } from "@/components/collections/CollectionGrid";
-import { outfitsApi } from "@/lib/api";
+import { outfitService } from "@/lib/services/outfit-service";
+
 export const metadata = {
   title: "All Outfits | Browse Complete Looks",
   description: "Browse our curated collection of complete outfits for gentlemen, ladies, and couples",
 };
+
 interface SearchParams {
   type?: string;
   page?: string;
 }
+
 interface PageProps {
   searchParams: Promise<SearchParams>;
 }
+
 export default async function OutfitsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const type = params.type;
   const page = parseInt(params.page || "1");
   const limit = 12;
+
   let allOutfits: any[] = [];
   let totalCount: number = 0;
+
   try {
-    const data = await outfitsApi.getAll({ type });
+    const data = await outfitService.getOutfits({ type });
     allOutfits = data.outfits || [];
     totalCount = allOutfits.length;
   } catch (error) {

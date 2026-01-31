@@ -141,8 +141,16 @@ export default function OrderDetailPage({ params }: PageProps) {
                   key={item.id}
                   className="flex gap-4 p-4 bg-cream-50 rounded-xl"
                 >
-                  <div className="w-16 h-20 rounded-lg overflow-hidden bg-cream-200 flex-shrink-0 flex items-center justify-center">
-                    <Package className="w-6 h-6 text-charcoal-300" />
+                  <div className="w-16 h-20 rounded-lg overflow-hidden bg-cream-200 flex-shrink-0 flex items-center justify-center relative">
+                    {item.product?.images?.[0] ? (
+                      <img
+                        src={item.product.images[0]}
+                        alt={item.productTitle}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Package className="w-6 h-6 text-charcoal-300" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-charcoal-900">

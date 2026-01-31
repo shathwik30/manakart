@@ -4,14 +4,18 @@ import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import { CollectionGrid } from "@/components/collections/CollectionGrid";
 import { CollectionHero } from "@/components/collections/CollectionHero";
-import { outfitsApi, Outfit } from "@/lib/api";
+import { outfitService } from "@/lib/services/outfit-service";
+import { Outfit } from "@/lib/api";
+
 interface PageProps {
   params: Promise<{ type: string }>;
 }
+
 const collectionData: Record<
   string,
   { title: string; subtitle: string; description: string; image: string }
 > = {
+// ... existing data ...
   gentlemen: {
     title: "Gentlemen",
     subtitle: "Refined Masculinity",
@@ -34,6 +38,7 @@ const collectionData: Record<
     image: "https://images.unsplash.com/photo-1529665730773-0c440c0e0d0e?w=1920"
   },
 };
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { type } = await params;
   const collection = collectionData[type.toLowerCase()];
@@ -45,16 +50,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: collection.description,
   };
 }
+
 export default async function CollectionPage({ params }: PageProps) {
   const { type } = await params;
   const collectionType = type.toLowerCase();
   const collection = collectionData[collectionType];
+
   if (!collection) {
     notFound();
   }
+
   let outfits: Outfit[] = [];
   try {
-    const data = await outfitsApi.getAll({
+    const data = await outfitService.getOutfits({
       type: collectionType.toUpperCase(),
     });
     outfits = data.outfits;
