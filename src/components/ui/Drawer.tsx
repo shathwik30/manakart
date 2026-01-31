@@ -1,12 +1,10 @@
 "use client";
-
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollLock } from "@/hooks";
-
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,7 +15,6 @@ interface DrawerProps {
   showCloseButton?: boolean;
   className?: string;
 }
-
 export function Drawer({
   isOpen,
   onClose,
@@ -29,27 +26,21 @@ export function Drawer({
   className,
 }: DrawerProps) {
   useScrollLock(isOpen);
-
-  
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
     }
-
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
-
   const sizes = {
     sm: "max-w-xs",
     md: "max-w-sm",
     lg: "max-w-md",
     xl: "max-w-lg",
   };
-
   const slideVariants = {
     left: {
       initial: { x: "-100%" },
@@ -62,9 +53,7 @@ export function Drawer({
       exit: { x: "100%" },
     },
   };
-
   if (typeof window === "undefined") return null;
-
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -78,7 +67,6 @@ export function Drawer({
             onClick={onClose}
             className="absolute inset-0 bg-charcoal-900/60 backdrop-blur-sm"
           />
-
           {}
           <motion.div
             initial={slideVariants[side].initial}
@@ -100,7 +88,6 @@ export function Drawer({
                     {title}
                   </h2>
                 )}
-
                 {showCloseButton && (
                   <button
                     onClick={onClose}
@@ -111,7 +98,6 @@ export function Drawer({
                 )}
               </div>
             )}
-
             {}
             <div className="flex-1 overflow-y-auto">{children}</div>
           </motion.div>

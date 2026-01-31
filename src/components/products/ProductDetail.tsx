@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,26 +17,20 @@ import { Button, Badge, Divider } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
 import { Product } from "@/lib/api";
 import toast from "react-hot-toast";
-
 interface ProductDetailProps {
   product: Product;
 }
-
 export function ProductDetail({ product }: ProductDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("");
-
   const { addItem, isLoading } = useCartStore();
-
   const images = product.images || [];
   const stockPerSize = product.stockPerSize || {};
-
   const handleAddToCart = async () => {
     if (!selectedSize) {
       toast.error("Kindly select your preferred size");
       return;
     }
-
     await addItem({
       productId: product.id,
       selectedSizes: { size: selectedSize },
@@ -45,15 +38,12 @@ export function ProductDetail({ product }: ProductDetailProps) {
       isBundle: false,
     });
   };
-
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
-
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
-
   return (
     <div className="pt-32 pb-20 bg-cream-100">
       <div className="container-luxury">
@@ -78,7 +68,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <li className="text-charcoal-900">{product.title}</li>
           </ol>
         </nav>
-
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           {}
           <div className="space-y-4">
@@ -97,7 +86,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   <ShoppingBag className="w-16 h-16 text-charcoal-300" />
                 </div>
               )}
-
               {}
               {images.length > 1 && (
                 <>
@@ -116,7 +104,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 </>
               )}
             </div>
-
             {}
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
@@ -142,7 +129,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
               </div>
             )}
           </div>
-
           {}
           <div>
             <motion.div
@@ -156,21 +142,17 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <h1 className="font-display text-3xl md:text-4xl text-charcoal-900 mb-4">
                 {product.title}
               </h1>
-
               {}
               <p className="font-serif text-3xl text-charcoal-900 mb-6">
                 {formatPrice(product.basePrice)}
               </p>
-
               {}
               {product.description && (
                 <p className="text-charcoal-600 leading-relaxed mb-8">
                   {product.description}
                 </p>
               )}
-
               <Divider className="mb-8" />
-
               {}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
@@ -179,13 +161,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
                     Size Guide
                   </button>
                 </div>
-
                 <div className="flex flex-wrap gap-3">
                   {product.availableSizes?.map((size) => {
                     const stock = stockPerSize[size] || 0;
                     const isOutOfStock = stock === 0;
                     const isSelected = selectedSize === size;
-
                     return (
                       <button
                         key={size}
@@ -206,7 +186,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   })}
                 </div>
               </div>
-
               {}
               <div className="flex gap-4 mb-8">
                 <Button
@@ -219,12 +198,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 >
                   {selectedSize ? "Add to Bag" : "Select a Size"}
                 </Button>
-
                 <Button variant="secondary" size="xl" className="flex-shrink-0">
                   <Share2 className="w-5 h-5" />
                 </Button>
               </div>
-
               {}
               <div className="grid grid-cols-3 gap-4 p-6 bg-cream-200 rounded-2xl">
                 <div className="text-center">

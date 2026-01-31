@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import "./globals.css";
-
 export const metadata: Metadata = {
   title: {
     default: "Succession | Luxury Fashion House",
@@ -37,7 +36,6 @@ export const metadata: Metadata = {
     follow: true,
   },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,13 +53,8 @@ export default function RootLayout({
       </head>
       <body className="overflow-x-hidden">
         <Providers>
-          {}
           <div className="grain-overlay" aria-hidden="true" />
-
-          {}
           {children}
-
-          {}
           <Toaster
             position="bottom-right"
             toastOptions={{

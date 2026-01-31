@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,38 +17,30 @@ import { Button, Badge, Divider } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
 import { OutfitDetail as OutfitDetailType, Product } from "@/lib/api";
 import toast from "react-hot-toast";
-
 interface OutfitDetailProps {
   outfit: OutfitDetailType;
 }
-
 export function OutfitDetail({ outfit }: OutfitDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
-
   const { addItem, isLoading } = useCartStore();
-
   const images = outfit.heroImages || [];
   const products = outfit.products || [];
-
   const allSizesSelected = products.every(
     (product) => selectedSizes[product.id]
   );
-
   const handleSizeSelect = (productId: string, size: string) => {
     setSelectedSizes((prev) => ({
       ...prev,
       [productId]: size,
     }));
   };
-
   const handleAddToCart = async () => {
     if (!allSizesSelected) {
       toast.error("Please select sizes for all items");
       return;
     }
-
     await addItem({
       outfitId: outfit.id,
       selectedSizes,
@@ -57,14 +48,12 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
       isBundle: true,
     });
   };
-
   const handleAddSingleProduct = async (productId: string) => {
     const size = selectedSizes[productId];
     if (!size) {
       toast.error("Please select a size");
       return;
     }
-
     setAddingProductId(productId);
     try {
       await addItem({
@@ -77,15 +66,12 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
       setAddingProductId(null);
     }
   };
-
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
-
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
-
   return (
     <div className="pt-32 pb-20 bg-cream-100">
       <div className="container-luxury">
@@ -110,7 +96,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
             <li className="text-charcoal-900">{outfit.title}</li>
           </ol>
         </nav>
-
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           {}
           <div className="space-y-4">
@@ -129,7 +114,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
                   <span className="text-charcoal-400">No image available</span>
                 </div>
               )}
-
               {}
               {images.length > 1 && (
                 <>
@@ -148,7 +132,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
                 </>
               )}
             </div>
-
             {}
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
@@ -174,7 +157,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
               </div>
             )}
           </div>
-
           {}
           <div>
             <motion.div
@@ -187,23 +169,19 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
                 <h1 className="font-display text-3xl md:text-4xl text-charcoal-900 mb-4">
                   {outfit.title}
                 </h1>
-
                 <div className="flex items-center gap-4">
                   <span className="font-serif text-3xl text-charcoal-900">
                     {formatPrice(outfit.bundlePrice)}
                   </span>
                 </div>
               </div>
-
               {}
               {outfit.description && (
                 <p className="text-charcoal-600 leading-relaxed mb-8">
                   {outfit.description}
                 </p>
               )}
-
               <Divider className="mb-8" />
-
               {}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
@@ -214,7 +192,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
                     Buy individual items or the complete outfit
                   </p>
                 </div>
-
                 <div className="space-y-6">
                   {products.map((product) => (
                     <ProductSizeSelector
@@ -228,7 +205,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
                   ))}
                 </div>
               </div>
-
               {}
               <div className="flex gap-4 mb-8">
                 <Button
@@ -241,12 +217,10 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
                 >
                   {allSizesSelected ? "Add Complete Outfit to Bag" : "Select All Sizes"}
                 </Button>
-
                 <Button variant="secondary" size="xl" className="flex-shrink-0">
                   <Share2 className="w-5 h-5" />
                 </Button>
               </div>
-
               {}
               <div className="grid grid-cols-3 gap-4 p-6 bg-cream-200 rounded-2xl">
                 <div className="text-center">
@@ -272,7 +246,6 @@ export function OutfitDetail({ outfit }: OutfitDetailProps) {
     </div>
   );
 }
-
 function ProductSizeSelector({
   product,
   selectedSize,
@@ -287,7 +260,6 @@ function ProductSizeSelector({
   isAddingToCart: boolean;
 }) {
   const stockPerSize = product.stockPerSize || {};
-
   return (
     <div className="flex gap-4 p-4 bg-white rounded-xl">
       {}
@@ -310,7 +282,6 @@ function ProductSizeSelector({
           </div>
         )}
       </Link>
-
       {}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -328,14 +299,12 @@ function ProductSizeSelector({
             {formatPrice(product.basePrice)}
           </span>
         </div>
-
         {}
         <div className="flex flex-wrap gap-2">
           {product.availableSizes?.map((size) => {
             const stock = stockPerSize[size] || 0;
             const isOutOfStock = stock === 0;
             const isSelected = selectedSize === size;
-
             return (
               <button
                 key={size}
@@ -355,7 +324,6 @@ function ProductSizeSelector({
             );
           })}
         </div>
-
         {}
         <div className="flex items-center justify-between mt-3">
           {selectedSize ? (
@@ -366,7 +334,6 @@ function ProductSizeSelector({
           ) : (
             <span className="text-xs text-charcoal-400">Select a size</span>
           )}
-
           <Button
             variant="secondary"
             size="sm"

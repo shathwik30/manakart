@@ -1,38 +1,29 @@
-import nodemailer from 'nodemailer'
-import { logger } from '@/lib/logger'
-import { formatPrice } from '@/lib/utils'
-
+import nodemailer from "nodemailer";
+import { logger } from "@/lib/logger";
+import { formatPrice } from "@/lib/utils";
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
+  port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-})
-
+});
 interface SendEmailOptions {
-  to: string
-  subject: string
-  html: string
+  to: string;
+  subject: string;
+  html: string;
 }
-
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<boolean> {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
-      subject,
-      html,
-    })
-    return true
+    await transporter.sendMail({ from: process.env.EMAIL_FROM, to, subject, html });
+    return true;
   } catch (error) {
-    logger.error('Email send error', { error: error instanceof Error ? error.message : 'Unknown error' })
-    return false
+    logger.error("Email send error", { error: error instanceof Error ? error.message : "Unknown error" });
+    return false;
   }
 }
-
 export async function sendOTPEmail(email: string, otp: string): Promise<boolean> {
   const html = `
     <!DOCTYPE html>
@@ -59,15 +50,9 @@ export async function sendOTPEmail(email: string, otp: string): Promise<boolean>
       </div>
     </body>
     </html>
-  `
-
-  return sendEmail({
-    to: email,
-    subject: 'Your Verification Code',
-    html,
-  })
+  `;
+  return sendEmail({ to: email, subject: "Your Verification Code", html });
 }
-
 export async function sendOrderConfirmationEmail(
   email: string,
   orderNumber: string,
@@ -85,8 +70,7 @@ export async function sendOrderConfirmationEmail(
       </tr>
     `
     )
-    .join('')
-
+    .join("");
   const html = `
     <!DOCTYPE html>
     <html>
@@ -128,11 +112,6 @@ export async function sendOrderConfirmationEmail(
       </div>
     </body>
     </html>
-  `
-
-  return sendEmail({
-    to: email,
-    subject: `Order Confirmed - ${orderNumber}`,
-    html,
-  })
+  `;
+  return sendEmail({ to: email, subject: `Order Confirmed - ${orderNumber}`, html });
 }

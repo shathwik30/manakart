@@ -1,32 +1,21 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
 const isServer = typeof window === "undefined";
-
-
 function getBaseUrl() {
   if (isServer) {
-    
-    return process.env.API_URL || "http://localhost:3000";
+    return process.env.API_URL || "http://localhost:3000"
   }
   return API_BASE_URL;
 }
-
-
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
 }
-
-
 interface RequestOptions {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   body?: unknown;
   headers?: Record<string, string>;
 }
-
-
 export class ApiError extends Error {
   constructor(
     public message: string,
@@ -37,264 +26,119 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
-
-
-async function api<T>(
-  endpoint: string,
-  options: RequestOptions = {}
-): Promise<T> {
+async function api<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
-
   const config: RequestInit = {
     method,
-    headers: {
-      ...headers,
-    },
+    headers: { ...headers },
     credentials: "include",
-    
     ...(isServer && { cache: "no-store" }),
   };
-
   if (body instanceof FormData) {
     config.body = body;
-    
   } else if (body !== undefined) {
     config.body = JSON.stringify(body);
-    config.headers = {
-      ...config.headers,
-      "Content-Type": "application/json",
-    };
+    config.headers = { ...config.headers, "Content-Type": "application/json" };
   }
-
   try {
     const response = await fetch(`${getBaseUrl()}${endpoint}`, config);
     const data: ApiResponse<T> = await response.json();
-
     if (!response.ok || !data.success) {
-      throw new ApiError(
-        data.error || "Something went wrong",
-        response.status,
-        data
-      );
+      throw new ApiError(data.error || "Something went wrong", response.status, data);
     }
-
     return data.data as T;
   } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
+    if (error instanceof ApiError) throw error;
     throw new ApiError("Network error. Please try again.", 0);
   }
 }
-
-
-
-
 export const authApi = {
   sendOtp: (email: string) =>
-    api<{ message: string }>("/api/auth/send-otp", {
-      method: "POST",
-      body: { email },
-    }),
-
-  verifyOtp: (data: {
-    email: string;
-    otp: string;
-    name?: string;
-    phone?: string;
-  }) =>
-    api<{
-      message: string;
-      user: User;
-      isNewUser: boolean;
-    }>("/api/auth/verify-otp", {
+    api<{ message: string }>("/api/auth/send-otp", { method: "POST", body: { email } }),
+  verifyOtp: (data: { email: string; otp: string; name?: string; phone?: string }) =>
+    api<{ message: string; user: User; isNewUser: boolean }>("/api/auth/verify-otp", {
       method: "POST",
       body: data,
     }),
-
-  getMe: () =>
-    api<{ user: User }>("/api/auth/me"),
-
-  logout: () =>
-    api<{ message: string }>("/api/auth/logout", {
-      method: "POST",
-    }),
+  getMe: () => api<{ user: User }>("/api/auth/me"),
+  logout: () => api<{ message: string }>("/api/auth/logout", { method: "POST" }),
 };
-
-
-
-
 export const productsApi = {
   getAll: (params?: { category?: string; active?: boolean }) => {
     const searchParams = new URLSearchParams();
     if (params?.category) searchParams.set("category", params.category);
-    if (params?.active !== undefined)
-      searchParams.set("active", String(params.active));
-
+    if (params?.active !== undefined) searchParams.set("active", String(params.active));
     const query = searchParams.toString();
     return api<{ products: Product[] }>(`/api/products${query ? `?${query}` : ""}`);
   },
-
-  getById: (id: string) =>
-    api<{ product: Product }>(`/api/products/${id}`),
-
-  getBySlug: (slug: string) =>
-    api<{ product: Product }>(`/api/products/${slug}`),
+  getById: (id: string) => api<{ product: Product }>(`/api/products/${id}`),
+  getBySlug: (slug: string) => api<{ product: Product }>(`/api/products/${slug}`),
 };
-
-
-
-
 export const outfitsApi = {
   getAll: (params?: { type?: string; featured?: boolean }) => {
     const searchParams = new URLSearchParams();
     if (params?.type) searchParams.set("type", params.type);
-    if (params?.featured !== undefined)
-      searchParams.set("featured", String(params.featured));
-
+    if (params?.featured !== undefined) searchParams.set("featured", String(params.featured));
     const query = searchParams.toString();
     return api<{ outfits: Outfit[] }>(`/api/outfits${query ? `?${query}` : ""}`);
   },
-
-  getBySlug: (slug: string) =>
-    api<{ outfit: OutfitDetail }>(`/api/outfits/${slug}`),
+  getBySlug: (slug: string) => api<{ outfit: OutfitDetail }>(`/api/outfits/${slug}`),
 };
-
-
-
-
 export const cartApi = {
-  get: () =>
-    api<CartResponse>("/api/cart"),
-
+  get: () => api<CartResponse>("/api/cart"),
   addItem: (data: AddToCartData) =>
-    api<{ message: string }>("/api/cart/add", {
-      method: "POST",
-      body: data,
-    }),
-
+    api<{ message: string }>("/api/cart/add", { method: "POST", body: data }),
   updateItem: (itemId: string, data: { selectedSizes?: Record<string, string>; quantity?: number }) =>
-    api<{ item: CartItem; message: string }>(`/api/cart/${itemId}`, {
-      method: "PATCH",
-      body: data,
-    }),
-
+    api<{ item: CartItem; message: string }>(`/api/cart/${itemId}`, { method: "PATCH", body: data }),
   removeItem: (itemId: string) =>
-    api<{ message: string }>(`/api/cart/${itemId}`, {
-      method: "DELETE",
-    }),
+    api<{ message: string }>(`/api/cart/${itemId}`, { method: "DELETE" }),
 };
-
-
-
-
 export const checkoutApi = {
   init: (data: CheckoutInitData) =>
-    api<{ checkoutSession: CheckoutSession }>("/api/checkout/init", {
-      method: "POST",
-      body: data,
-    }),
-
+    api<{ checkoutSession: CheckoutSession }>("/api/checkout/init", { method: "POST", body: data }),
   applyCoupon: (code: string, subtotal: number) =>
-    api<{ coupon: Coupon; discount: number; message: string }>(
-      "/api/checkout/apply-coupon",
-      {
-        method: "POST",
-        body: { code, subtotal },
-      }
-    ),
-
+    api<{ coupon: Coupon; discount: number; message: string }>("/api/checkout/apply-coupon", {
+      method: "POST",
+      body: { code, subtotal },
+    }),
   createPayment: (data: CreatePaymentData) =>
-    api<PaymentResponse>("/api/checkout/create-payment", {
-      method: "POST",
-      body: data,
-    }),
-
+    api<PaymentResponse>("/api/checkout/create-payment", { method: "POST", body: data }),
   verify: (data: VerifyPaymentData) =>
-    api<{ message: string; order: Order }>("/api/checkout/verify", {
-      method: "POST",
-      body: data,
-    }),
+    api<{ message: string; order: Order }>("/api/checkout/verify", { method: "POST", body: data }),
 };
-
-
-
-
 export const accountApi = {
-  getProfile: () =>
-    api<{ user: User }>("/api/account/profile"),
-
+  getProfile: () => api<{ user: User }>("/api/account/profile"),
   updateProfile: (data: { name?: string; phone?: string }) =>
-    api<{ user: User; message: string }>("/api/account/profile", {
-      method: "PATCH",
-      body: data,
-    }),
-
-  getAddresses: () =>
-    api<{ addresses: Address[] }>("/api/account/addresses"),
-
+    api<{ user: User; message: string }>("/api/account/profile", { method: "PATCH", body: data }),
+  getAddresses: () => api<{ addresses: Address[] }>("/api/account/addresses"),
   addAddress: (data: AddressInput) =>
-    api<{ address: Address; message: string }>("/api/account/addresses", {
-      method: "POST",
-      body: data,
-    }),
-
+    api<{ address: Address; message: string }>("/api/account/addresses", { method: "POST", body: data }),
   updateAddress: (id: string, data: Partial<AddressInput>) =>
-    api<{ address: Address; message: string }>(`/api/account/addresses/${id}`, {
-      method: "PATCH",
-      body: data,
-    }),
-
+    api<{ address: Address; message: string }>(`/api/account/addresses/${id}`, { method: "PATCH", body: data }),
   deleteAddress: (id: string) =>
-    api<{ message: string }>(`/api/account/addresses/${id}`, {
-      method: "DELETE",
-    }),
-
+    api<{ message: string }>(`/api/account/addresses/${id}`, { method: "DELETE" }),
   getOrders: (params?: { page?: number; limit?: number; status?: string }) => {
     const searchParams = new URLSearchParams();
     if (params?.page) searchParams.set("page", String(params.page));
     if (params?.limit) searchParams.set("limit", String(params.limit));
     if (params?.status) searchParams.set("status", params.status);
-
     const query = searchParams.toString();
-    return api<{ orders: Order[]; pagination: Pagination }>(
-      `/api/account/orders${query ? `?${query}` : ""}`
-    );
+    return api<{ orders: Order[]; pagination: Pagination }>(`/api/account/orders${query ? `?${query}` : ""}`);
   },
-
-  getOrder: (id: string) =>
-    api<{ order: OrderDetail }>(`/api/account/orders/${id}`),
+  getOrder: (id: string) => api<{ order: OrderDetail }>(`/api/account/orders/${id}`),
 };
-
-
-
-
 export const landingApi = {
-  getHero: () =>
-    api<{ heroContent: HeroContent[] }>("/api/landing/hero"),
-
-  getTopFits: () =>
-    api<{ topFits: TopFits }>("/api/landing/top-fits"),
-
-  getReels: () =>
-    api<{ reels: Reel[] }>("/api/landing/reels"),
-
+  getHero: () => api<{ heroContent: HeroContent[] }>("/api/landing/hero"),
+  getTopFits: () => api<{ topFits: TopFits }>("/api/landing/top-fits"),
+  getReels: () => api<{ reels: Reel[] }>("/api/landing/reels"),
   getReviews: (params?: { featured?: boolean; limit?: number }) => {
     const searchParams = new URLSearchParams();
-    if (params?.featured !== undefined)
-      searchParams.set("featured", String(params.featured));
+    if (params?.featured !== undefined) searchParams.set("featured", String(params.featured));
     if (params?.limit) searchParams.set("limit", String(params.limit));
-
     const query = searchParams.toString();
-    return api<{ reviews: Review[]; stats: ReviewStats }>(
-      `/api/landing/reviews${query ? `?${query}` : ""}`
-    );
+    return api<{ reviews: Review[]; stats: ReviewStats }>(`/api/landing/reviews${query ? `?${query}` : ""}`);
   },
 };
-
-
-
-
 export interface User {
   id: string;
   email: string;
@@ -303,7 +147,6 @@ export interface User {
   role: "USER" | "ADMIN";
   createdAt?: string;
 }
-
 export interface Product {
   id: string;
   title: string;
@@ -317,7 +160,6 @@ export interface Product {
   stockPerSize: Record<string, number>;
   isActive: boolean;
 }
-
 export interface Outfit {
   id: string;
   title: string;
@@ -331,13 +173,11 @@ export interface Outfit {
   productCount: number;
   products: Product[];
 }
-
 export interface OutfitDetail extends Outfit {
   individualTotal: number;
   savings: number;
   createdAt: string;
 }
-
 export interface CartItem {
   id: string;
   type: "outfit" | "product";
@@ -347,18 +187,12 @@ export interface CartItem {
   quantity: number;
   price: number;
 }
-
 export interface CartResponse {
-  cart: {
-    id: string;
-    userId?: string;
-    sessionId?: string;
-  } | null;
+  cart: { id: string; userId?: string; sessionId?: string } | null;
   items: CartItem[];
   subtotal: number;
   itemCount: number;
 }
-
 export interface AddToCartData {
   outfitId?: string;
   productId?: string;
@@ -366,7 +200,6 @@ export interface AddToCartData {
   quantity?: number;
   isBundle?: boolean;
 }
-
 export interface Address {
   id: string;
   name: string;
@@ -379,7 +212,6 @@ export interface Address {
   country: string;
   isDefault: boolean;
 }
-
 export interface AddressInput {
   name: string;
   email: string;
@@ -390,12 +222,10 @@ export interface AddressInput {
   pincode: string;
   isDefault?: boolean;
 }
-
 export interface CheckoutInitData {
   address?: AddressInput;
   savedAddressId?: string;
 }
-
 export interface CheckoutSession {
   cartId: string;
   address: AddressInput;
@@ -413,7 +243,6 @@ export interface CheckoutSession {
   total: number;
   requiresOtp: boolean;
 }
-
 export interface Coupon {
   id: string;
   code: string;
@@ -426,7 +255,6 @@ export interface Coupon {
   expiresAt?: string | null;
   isActive: boolean;
 }
-
 export interface CreatePaymentData {
   cartId: string;
   address: AddressInput;
@@ -436,7 +264,6 @@ export interface CreatePaymentData {
   discount: number;
   total: number;
 }
-
 export interface PaymentResponse {
   razorpayOrderId: string;
   razorpayKeyId: string;
@@ -445,14 +272,12 @@ export interface PaymentResponse {
   orderNumber: string;
   checkoutData: Record<string, unknown>;
 }
-
 export interface VerifyPaymentData {
   razorpayOrderId: string;
   razorpayPaymentId: string;
   razorpaySignature: string;
   checkoutData: Record<string, unknown>;
 }
-
 export interface Order {
   id: string;
   orderNumber: string;
@@ -464,9 +289,8 @@ export interface Order {
   orderStatus: "CREATED" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   createdAt: string;
   items: OrderItem[];
-  user?: User; 
+  user?: User;
 }
-
 export interface OrderItem {
   id: string;
   productTitle: string;
@@ -474,38 +298,36 @@ export interface OrderItem {
   size: string;
   quantity: number;
   price: number;
-  product: Product; 
+  product: Product;
 }
-
 export interface OrderDetail extends Order {
   paymentId?: string;
   paymentMethod?: string;
   addressSnapshot: AddressInput;
   coupon?: Coupon;
 }
-
 export interface Pagination {
   page: number;
   limit: number;
   totalCount: number;
   totalPages: number;
 }
-
 export interface HeroContent {
   id: string;
   title: string;
-  subtitle?: string;
+  subtitle?: string | null;
   image: string;
-  ctaText?: string;
-  ctaLink?: string;
+  ctaText?: string | null;
+  ctaLink?: string | null;
+  isActive: boolean;
+  position: number;
+  createdAt: Date | string;
 }
-
 export interface TopFits {
   gentlemen: OutfitCard[];
   lady: OutfitCard[];
   couple: OutfitCard[];
 }
-
 export interface OutfitCard {
   id: string;
   title: string;
@@ -516,20 +338,17 @@ export interface OutfitCard {
   savings: number;
   productCount: number;
 }
-
 export interface Reel {
   id: string;
   videoUrl: string;
-  thumbnail?: string;
-  title?: string;
-  outfit?: {
-    id: string;
-    title: string;
-    slug: string;
-    bundlePrice: number;
-  };
+  thumbnail?: string | null;
+  title?: string | null;
+  outfitId?: string | null;
+  isActive: boolean;
+  position: number;
+  createdAt: Date | string;
+  outfit?: { id: string; title: string; slug: string; bundlePrice: number };
 }
-
 export interface Review {
   id: string;
   userName: string;
@@ -538,10 +357,8 @@ export interface Review {
   media: string[];
   createdAt: string;
 }
-
 export interface ReviewStats {
   averageRating: number;
   totalReviews: number;
 }
-
 export default api;

@@ -1,10 +1,8 @@
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function GET() {
   try {
-    
     const [gentlemen, lady, couple] = await Promise.all([
       prisma.outfit.findMany({
         where: {
@@ -82,8 +80,6 @@ export async function GET() {
         },
       }),
     ])
-
-    
     type Outfit = {
       id: string
       title: string
@@ -96,7 +92,6 @@ export async function GET() {
         }
       }[]
     }
-
     const transformOutfits = (outfits: Outfit[]) =>
       outfits.map((outfit) => {
         const individualTotal = outfit.items.reduce(
@@ -114,7 +109,6 @@ export async function GET() {
           productCount: outfit.items.length,
         }
       })
-
     return successResponse({
       topFits: {
         gentlemen: transformOutfits(gentlemen),

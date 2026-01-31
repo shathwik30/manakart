@@ -2,17 +2,14 @@ import { Metadata } from "next";
 import { Header, Footer } from "@/components/layout";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
-
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Get in touch with Succession. We'd love to hear from you.",
 };
-
 export default function ContactPage() {
   return (
     <>
       <Header />
-
       <main className="pt-32 pb-20 bg-cream-100">
         <div className="container-luxury">
           <div className="text-center mb-16">
@@ -26,7 +23,6 @@ export default function ContactPage() {
               ready to help.
             </p>
           </div>
-
           <div className="grid lg:grid-cols-3 gap-10">
             {}
             <div className="lg:col-span-1 space-y-6">
@@ -37,7 +33,6 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-charcoal-900 mb-1">Email</h3>
-                    
                     <a
                       href="mailto:hello@succession.com"
                       className="text-charcoal-600 hover:text-gold-600 transition-colors"
@@ -47,7 +42,6 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-
               <div className="bg-white rounded-2xl p-6 shadow-soft-md">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-gold-100 flex items-center justify-center flex-shrink-0">
@@ -55,7 +49,6 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-charcoal-900 mb-1">Phone</h3>
-                    
                     <a
                       href="tel:+911234567890"
                       className="text-charcoal-600 hover:text-gold-600 transition-colors"
@@ -65,7 +58,6 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-
               <div className="bg-white rounded-2xl p-6 shadow-soft-md">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-gold-100 flex items-center justify-center flex-shrink-0">
@@ -83,7 +75,6 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-
               <div className="bg-white rounded-2xl p-6 shadow-soft-md">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-gold-100 flex items-center justify-center flex-shrink-0">
@@ -100,7 +91,6 @@ export default function ContactPage() {
                 </div>
               </div>
             </div>
-
             {}
             <div className="lg:col-span-2">
               <ContactForm />
@@ -108,7 +98,6 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );

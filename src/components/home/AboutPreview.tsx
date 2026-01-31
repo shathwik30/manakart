@@ -1,11 +1,9 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button, Divider } from "@/components/ui";
-
 const features = [
   {
     title: "Exquisite Craftsmanship",
@@ -23,7 +21,6 @@ const features = [
       "Our designs transcend trends, offering enduring elegance for generations.",
   },
 ];
-
 export function AboutPreview() {
   return (
     <section className="section-lg bg-white overflow-hidden">
@@ -39,13 +36,12 @@ export function AboutPreview() {
           >
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800"
+                src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200"
                 alt="Craftsmanship"
                 fill
                 className="object-cover"
               />
             </div>
-
             {}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -60,7 +56,6 @@ export function AboutPreview() {
               </p>
             </motion.div>
           </motion.div>
-
           {}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -74,7 +69,6 @@ export function AboutPreview() {
               <br />
               Timeless Elegance
             </h2>
-
             <p className="text-charcoal-600 text-lg leading-relaxed mb-10">
               At Succession, we believe that true style is eternal. Our
               collections are designed for those who appreciate the finer things
@@ -82,9 +76,7 @@ export function AboutPreview() {
               following trends, but about cultivating a refined sensibility that
               stands the test of time.
             </p>
-
             <Divider variant="gold" className="mb-10" />
-
             {}
             <div className="space-y-8 mb-10">
               {features.map((feature, index) => (
@@ -110,7 +102,6 @@ export function AboutPreview() {
                 </motion.div>
               ))}
             </div>
-
             <Link href="/about">
               <Button
                 variant="secondary"

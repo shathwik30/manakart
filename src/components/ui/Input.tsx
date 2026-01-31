@@ -1,10 +1,8 @@
 "use client";
-
 import { forwardRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
@@ -13,7 +11,6 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   rightIcon?: React.ReactNode;
   variant?: "default" | "luxury";
 }
-
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -33,14 +30,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const [showPassword, setShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const isPassword = type === "password";
-
     const baseStyles = `
       w-full transition-all duration-300
       placeholder:text-charcoal-400
       disabled:opacity-50 disabled:cursor-not-allowed
       focus:outline-none
     `;
-
     const variants = {
       default: `
         px-4 py-3 bg-white
@@ -57,7 +52,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         ${error ? "border-burgundy-500 focus:border-burgundy-500" : ""}
       `,
     };
-
     return (
       <div className="w-full">
         {label && (
@@ -72,7 +66,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </motion.label>
         )}
-
         <motion.div
           className="relative"
           animate={{
@@ -91,7 +84,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               {leftIcon}
             </motion.div>
           )}
-
           <input
             ref={ref}
             type={isPassword && showPassword ? "text" : type}
@@ -107,7 +99,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             )}
             {...props}
           />
-
           {/* Focus indicator line for luxury variant */}
           {variant === "luxury" && (
             <motion.div
@@ -117,7 +108,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             />
           )}
-
           {isPassword && (
             <motion.button
               type="button"
@@ -133,14 +123,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               )}
             </motion.button>
           )}
-
           {rightIcon && !isPassword && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400">
               {rightIcon}
             </div>
           )}
         </motion.div>
-
         <AnimatePresence mode="wait">
           {error && (
             <motion.p
@@ -154,7 +142,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             </motion.p>
           )}
         </AnimatePresence>
-
         {hint && !error && (
           <motion.p
             initial={{ opacity: 0 }}
@@ -168,8 +155,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
-
 Input.displayName = "Input";
-
 export { Input };
 export type { InputProps };

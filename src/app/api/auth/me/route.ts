@@ -2,15 +2,12 @@ import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function GET() {
   try {
     const currentUser = await getCurrentUser()
-
     if (!currentUser) {
       return errorResponse('Not authenticated', 401)
     }
-
     const user = await prisma.user.findUnique({
       where: { id: currentUser.userId },
       select: {
@@ -22,11 +19,9 @@ export async function GET() {
         createdAt: true,
       },
     })
-
     if (!user) {
       return errorResponse('User not found', 404)
     }
-
     return successResponse({ user })
   } catch (error) {
     logger.error('Get me error', { error: error instanceof Error ? error.message : 'Unknown error' })

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,25 +6,20 @@ import { X, ChevronRight, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollLock } from "@/hooks";
 import { useAuthStore } from "@/store/useAuthStore";
-
 interface NavItem {
   label: string;
   href: string;
   children?: { label: string; href: string }[];
 }
-
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   navigation: NavItem[];
 }
-
 export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const { isAuthenticated } = useAuthStore();
-
   useScrollLock(isOpen);
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -39,7 +33,6 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
             onClick={onClose}
             className="fixed inset-0 z-[100] bg-charcoal-900/60 backdrop-blur-sm lg:hidden"
           />
-
           {}
           <motion.div
             initial={{ x: "-100%" }}
@@ -59,7 +52,6 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
                 <X className="w-6 h-6" />
               </button>
             </div>
-
             {}
             <nav className="flex-1 overflow-y-auto py-4">
               {navigation.map((item) => (
@@ -84,7 +76,6 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
                           )}
                         />
                       </button>
-
                       <AnimatePresence>
                         {expandedItem === item.label && (
                           <motion.div
@@ -120,7 +111,6 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
                 </div>
               ))}
             </nav>
-
             {}
             <div className="p-6 border-t border-charcoal-100 space-y-3">
               <Link
@@ -131,7 +121,6 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
                 <User className="w-5 h-5" />
                 <span>{isAuthenticated ? "My Account" : "Sign In"}</span>
               </Link>
-
               <button className="flex items-center gap-3 w-full px-4 py-3 text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/50 rounded-lg transition-colors">
                 <Search className="w-5 h-5" />
                 <span>Search</span>

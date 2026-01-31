@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { OutfitDetail, Product } from "@/lib/api";
 import { adminApi } from "@/lib/adminApi";
@@ -7,18 +6,15 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Loader2, X, Plus, Search, Check } from "lucide-react";
 import Image from "next/image";
-
 interface OutfitFormProps {
   initialData?: OutfitDetail;
 }
-
 export default function OutfitForm({ initialData }: OutfitFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [searchingProducts, setSearchingProducts] = useState(false);
   const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
   const [showProductSearch, setShowProductSearch] = useState(false);
-
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     genderType: initialData?.genderType || "GENTLEMEN" as "GENTLEMEN" | "LADY" | "COUPLE",
@@ -27,17 +23,13 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
     isActive: initialData?.isActive ?? true,
     isFeatured: initialData?.isFeatured ?? false,
   });
-
   const [heroImages, setHeroImages] = useState<string[]>(initialData?.heroImages || []);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<Product[]>(initialData?.products || []);
   const [productSearch, setProductSearch] = useState("");
-
-  
   useEffect(() => {
     fetchProducts();
   }, []);
-
   const fetchProducts = async () => {
     try {
       setSearchingProducts(true);
@@ -49,7 +41,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
       setSearchingProducts(false);
     }
   };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
@@ -65,7 +56,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
       }));
     }
   };
-
   const addHeroImage = () => {
     if (!newImageUrl.trim()) {
       toast.error("Please enter an image URL");
@@ -78,11 +68,9 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
     setHeroImages((prev) => [...prev, newImageUrl.trim()]);
     setNewImageUrl("");
   };
-
   const removeHeroImage = (index: number) => {
     setHeroImages((prev) => prev.filter((_, i) => i !== index));
   };
-
   const toggleProductSelection = (product: Product) => {
     setSelectedProducts((prev) => {
       const isSelected = prev.some((p) => p.id === product.id);
@@ -93,46 +81,37 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
       }
     });
   };
-
   const removeProduct = (productId: string) => {
     setSelectedProducts((prev) => prev.filter((p) => p.id !== productId));
   };
-
   const filteredProducts = availableProducts.filter((product) =>
     product.title.toLowerCase().includes(productSearch.toLowerCase()) ||
     product.category.toLowerCase().includes(productSearch.toLowerCase())
   );
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      
       if (!formData.title.trim()) {
         toast.error("Title is required");
         setLoading(false);
         return;
       }
-
       if (heroImages.length === 0) {
         toast.error("At least one hero image is required");
         setLoading(false);
         return;
       }
-
       if (selectedProducts.length === 0) {
         toast.error("Please select at least one product");
         setLoading(false);
         return;
       }
-
       if (formData.bundlePrice <= 0) {
         toast.error("Bundle price must be greater than 0");
         setLoading(false);
         return;
       }
-
       const payload = {
         title: formData.title,
         genderType: formData.genderType,
@@ -143,10 +122,8 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
       };
-
       await adminApi.createOutfit(payload);
       toast.success("Outfit created successfully");
-
       router.push("/admin/outfits");
       router.refresh();
     } catch (error) {
@@ -155,12 +132,10 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
       setLoading(false);
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-4">Basic Information</h2>
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-charcoal-600 mb-1">
@@ -175,7 +150,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               required
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-charcoal-600 mb-1">
               Gender Type <span className="text-red-500">*</span>
@@ -192,7 +166,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               <option value="COUPLE">Couple</option>
             </select>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-charcoal-600 mb-1">
               Description
@@ -205,7 +178,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               className="w-full px-3 py-2 border border-charcoal-200 rounded-lg focus:ring-2 focus:ring-gold-600 focus:border-transparent"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-charcoal-600 mb-1">
               Bundle Price (₹) <span className="text-red-500">*</span>
@@ -221,7 +193,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               required
             />
           </div>
-
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2">
               <input
@@ -233,7 +204,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               />
               <span className="text-sm font-medium text-charcoal-600">Active</span>
             </label>
-
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -247,18 +217,16 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
           </div>
         </div>
       </div>
-
       {}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-[#1A1A1A] mb-4">Hero Images</h2>
-
         <div className="space-y-4">
           <div className="flex gap-2">
             <input
               type="url"
               value={newImageUrl}
               onChange={(e) => setNewImageUrl(e.target.value)}
-              placeholder="Enter image URL (https://...)"
+              placeholder="Enter image URL (https://example.com/image.jpg)"
               className="flex-1 px-3 py-2 border border-charcoal-200 rounded-lg focus:ring-2 focus:ring-gold-600 focus:border-transparent"
             />
             <button
@@ -269,7 +237,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               <Plus className="w-5 h-5" />
             </button>
           </div>
-
           {heroImages.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {heroImages.map((url, index) => (
@@ -291,13 +258,11 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               ))}
             </div>
           )}
-
           {heroImages.length === 0 && (
             <p className="text-sm text-charcoal-500">No hero images added yet</p>
           )}
         </div>
       </div>
-
       {}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
@@ -313,7 +278,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
             {showProductSearch ? "Hide Search" : "Add Products"}
           </button>
         </div>
-
         {}
         {selectedProducts.length > 0 && (
           <div className="mb-4 space-y-2">
@@ -351,7 +315,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
             ))}
           </div>
         )}
-
         {}
         {showProductSearch && (
           <div className="space-y-4">
@@ -362,7 +325,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
               placeholder="Search products..."
               className="w-full px-3 py-2 border border-charcoal-200 rounded-lg focus:ring-2 focus:ring-gold-600 focus:border-transparent"
             />
-
             {searchingProducts ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-gold-600" />
@@ -406,7 +368,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
                     </button>
                   );
                 })}
-
                 {filteredProducts.length === 0 && (
                   <p className="text-center text-charcoal-500 py-8">No products found</p>
                 )}
@@ -415,7 +376,6 @@ export default function OutfitForm({ initialData }: OutfitFormProps) {
           </div>
         )}
       </div>
-
       {}
       <div className="flex justify-end gap-4">
         <button

@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,11 +13,9 @@ import { Avatar, Divider } from "@/components/ui";
 import { useAuthStore } from "@/store/useAuthStore";
 import { User as UserType } from "@/lib/api";
 import toast from "react-hot-toast";
-
 interface AccountSidebarProps {
   user: UserType | null;
 }
-
 const menuItems = [
   {
     label: "Profile",
@@ -36,18 +33,15 @@ const menuItems = [
     icon: MapPin,
   },
 ];
-
 export function AccountSidebar({ user }: AccountSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthStore();
-
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully");
     router.push("/");
   };
-
   return (
     <div className="bg-white rounded-2xl p-6 shadow-soft-md sticky top-32">
       {}
@@ -60,9 +54,7 @@ export function AccountSidebar({ user }: AccountSidebarProps) {
           <p className="text-sm text-charcoal-500 truncate">{user?.email}</p>
         </div>
       </div>
-
       <Divider className="mb-6" />
-
       {}
       <nav className="space-y-1">
         {menuItems.map((item) => {
@@ -70,7 +62,6 @@ export function AccountSidebar({ user }: AccountSidebarProps) {
             item.href === "/account"
               ? pathname === "/account"
               : pathname.startsWith(item.href);
-
           return (
             <Link
               key={item.href}
@@ -93,9 +84,7 @@ export function AccountSidebar({ user }: AccountSidebarProps) {
           );
         })}
       </nav>
-
       <Divider className="my-6" />
-
       {}
       <button
         onClick={handleLogout}

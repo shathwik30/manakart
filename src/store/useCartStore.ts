@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { cartApi, CartItem, CartResponse } from "@/lib/api";
 import toast from "react-hot-toast";
-
 interface CartState {
   items: CartItem[];
   cartId: string | null;
@@ -9,8 +8,6 @@ interface CartState {
   itemCount: number;
   isLoading: boolean;
   isOpen: boolean;
-
-  
   fetchCart: () => Promise<void>;
   addItem: (data: {
     outfitId?: string;
@@ -28,7 +25,6 @@ interface CartState {
   closeCart: () => void;
   toggleCart: () => void;
 }
-
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   cartId: null,
@@ -36,7 +32,6 @@ export const useCartStore = create<CartState>((set, get) => ({
   itemCount: 0,
   isLoading: false,
   isOpen: false,
-
   fetchCart: async () => {
     try {
       set({ isLoading: true });
@@ -52,7 +47,6 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   addItem: async (data) => {
     try {
       set({ isLoading: true });
@@ -65,7 +59,6 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   updateItem: async (itemId, data) => {
     try {
       set({ isLoading: true });
@@ -76,7 +69,6 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   removeItem: async (itemId) => {
     try {
       set({ isLoading: true });
@@ -88,7 +80,6 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-
   openCart: () => set({ isOpen: true }),
   closeCart: () => set({ isOpen: false }),
   toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),

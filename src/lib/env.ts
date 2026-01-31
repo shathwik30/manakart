@@ -1,66 +1,37 @@
-
-
-import { logger } from '@/lib/logger'
-
-const requiredEnvVars = [
-  'DATABASE_URL',
-  'JWT_SECRET',
-  'ADMIN_SECRET_KEY',
-  'RAZORPAY_KEY_ID',
-  'RAZORPAY_KEY_SECRET',
-] as const
-
-const optionalEnvVars = [
-  'SMTP_HOST',
-  'SMTP_PORT',
-  'SMTP_USER',
-  'SMTP_PASS',
-  'EMAIL_FROM',
-  'NEXT_PUBLIC_APP_URL',
-] as const
-
+import { z } from "zod";
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  DATABASE_URL: z.string().min(1),
+  JWT_SECRET: z.string().min(32),
+  ADMIN_SECRET_KEY: z.string().min(16),
+  SMTP_HOST: z.string().min(1),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().email(),
+  SMTP_PASS: z.string().min(1),
+  EMAIL_FROM: z.string().min(1),
+  RAZORPAY_KEY_ID: z.string().min(1),
+  RAZORPAY_KEY_SECRET: z.string().min(1),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+});
+type Env = z.infer<typeof envSchema>;
+let _env: Env | undefined;
 export function validateEnv() {
-  const missing: string[] = []
-
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-      missing.push(envVar)
+  if (_env) return _env;
+  try {
+    _env = envSchema.parse(process.env);
+    return _env;
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      const missingVars = error.issues.map((err) => `  - ${err.path.join(".")}: ${err.message}`);
+      console.error("\nEnvironment Validation Failed:\n" + missingVars.join("\n"));
+      throw new Error("Environment validation failed");
     }
-  }
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-        'Please check your .env file and ensure all required variables are set.'
-    )
-  }
-
-  
-  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters long')
-  }
-
-  
-  const missingOptional = optionalEnvVars.filter((v) => !process.env[v])
-  if (missingOptional.length > 0) {
-    logger.warn(
-      `Optional environment variables not set: ${missingOptional.join(', ')}`
-    )
+    throw error;
   }
 }
-
-
-export const env = {
-  DATABASE_URL: process.env.DATABASE_URL!,
-  JWT_SECRET: process.env.JWT_SECRET!,
-  ADMIN_SECRET_KEY: process.env.ADMIN_SECRET_KEY!,
-  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID!,
-  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET!,
-  SMTP_HOST: process.env.SMTP_HOST,
-  SMTP_PORT: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
-  SMTP_USER: process.env.SMTP_USER,
-  SMTP_PASS: process.env.SMTP_PASS,
-  EMAIL_FROM: process.env.EMAIL_FROM,
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-  NODE_ENV: process.env.NODE_ENV || 'development',
-}
+export const env = typeof window === "undefined" ? validateEnv() : ({} as Env);

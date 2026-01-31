@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/lib/utils";
-
 interface AvatarProps {
   src?: string | null;
   alt?: string;
@@ -8,7 +7,6 @@ interface AvatarProps {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
-
 export function Avatar({ src, alt, name, size = "md", className }: AvatarProps) {
   const sizes = {
     sm: "w-8 h-8 text-xs",
@@ -16,7 +14,6 @@ export function Avatar({ src, alt, name, size = "md", className }: AvatarProps) 
     lg: "w-12 h-12 text-base",
     xl: "w-16 h-16 text-lg",
   };
-
   if (src) {
     return (
       <img
@@ -30,7 +27,6 @@ export function Avatar({ src, alt, name, size = "md", className }: AvatarProps) 
       />
     );
   }
-
   return (
     <div
       className={cn(

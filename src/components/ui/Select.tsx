@@ -1,15 +1,12 @@
 "use client";
-
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
-
 interface SelectOption {
   label: string;
   value: string;
   disabled?: boolean;
 }
-
 interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "children"> {
   label?: string;
   error?: string;
@@ -18,7 +15,6 @@ interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>
   placeholder?: string;
   variant?: "default" | "luxury";
 }
-
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
@@ -40,7 +36,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       disabled:opacity-50 disabled:cursor-not-allowed
       focus:outline-none
     `;
-
     const variants = {
       default: `
         px-4 py-3 pr-10 bg-white
@@ -57,7 +52,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         ${error ? "border-burgundy-500 focus:border-burgundy-500" : ""}
       `,
     };
-
     return (
       <div className="w-full">
         {label && (
@@ -65,7 +59,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {label}
           </label>
         )}
-
         <div className="relative">
           <select
             ref={ref}
@@ -86,12 +79,9 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))}
           </select>
-
           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal-400 pointer-events-none" />
         </div>
-
         {error && <p className="mt-2 text-sm text-burgundy-500">{error}</p>}
-
         {hint && !error && (
           <p className="mt-2 text-sm text-charcoal-500">{hint}</p>
         )}
@@ -99,8 +89,6 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     );
   }
 );
-
 Select.displayName = "Select";
-
 export { Select };
 export type { SelectProps, SelectOption };

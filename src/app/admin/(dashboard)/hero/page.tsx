@@ -1,18 +1,15 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { HeroContent } from "@/lib/api";
 import { HeroForm } from "@/components/admin/HeroForm";
 import { Edit, Trash2, Loader2, Plus } from "lucide-react";
 import { toast } from "react-hot-toast";
-
 export default function AdminMarketing() {
   const [heroContent, setHeroContent] = useState<HeroContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedHero, setSelectedHero] = useState<HeroContent | undefined>();
-
   const fetchHero = async () => {
     try {
       setLoading(true);
@@ -24,28 +21,22 @@ export default function AdminMarketing() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchHero();
   }, []);
-
   const handleOpenForm = (hero?: HeroContent) => {
     setSelectedHero(hero);
     setShowForm(true);
   };
-
   const handleCloseForm = () => {
     setShowForm(false);
     setSelectedHero(undefined);
   };
-
   const handleFormSuccess = () => {
     fetchHero();
   };
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this hero slide?")) return;
-
     try {
       await adminApi.deleteHeroContent(id);
       toast.success("Hero slide deleted");
@@ -54,7 +45,6 @@ export default function AdminMarketing() {
       toast.error("Failed to delete hero slide");
     }
   };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -70,7 +60,6 @@ export default function AdminMarketing() {
           <span>Add Hero Slide</span>
         </button>
       </div>
-
       <div className="space-y-8">
         <section>
           {loading ? (
@@ -172,7 +161,6 @@ export default function AdminMarketing() {
           )}
         </section>
       </div>
-
       {showForm && (
         <HeroForm
           hero={selectedHero}

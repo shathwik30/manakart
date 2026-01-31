@@ -3,19 +3,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { Header, Footer } from "@/components/layout";
 import { ArrowRight } from "lucide-react";
-
 export const metadata: Metadata = {
   title: "Collections",
   description: "Explore our curated collections of luxury fashion for Gentlemen, Lady, and Couples.",
 };
-
 const collections = [
   {
     id: "gentlemen",
     title: "Gentlemen",
     subtitle: "Refined Masculinity",
     description: "Discover impeccably tailored pieces that embody timeless sophistication and modern elegance.",
-    image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=1200",
+    image: "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=1200",
     href: "/collections/gentlemen",
   },
   {
@@ -23,7 +21,7 @@ const collections = [
     title: "Lady",
     subtitle: "Effortless Grace",
     description: "Elegant ensembles designed for the modern woman who appreciates understated luxury.",
-    image: "https://images.unsplash.com/photo-1518577915332-c2a19f149a75?w=1200",
+    image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=1200",
     href: "/collections/lady",
   },
   {
@@ -31,17 +29,14 @@ const collections = [
     title: "Couple",
     subtitle: "Harmonious Elegance",
     description: "Coordinated looks for couples who appreciate the art of dressing together.",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1200",
+    image: "https://images.unsplash.com/photo-1529665730773-0c440c0e0d0e?w=1200",
     href: "/collections/couple",
   },
 ];
-
 export default function CollectionsPage() {
   return (
     <>
       <Header />
-
-      {}
       <section className="pt-32 pb-16 bg-cream-100">
         <div className="container-luxury text-center">
           <p className="overline text-gold-600 mb-4">Our Collections</p>
@@ -54,8 +49,6 @@ export default function CollectionsPage() {
           </p>
         </div>
       </section>
-
-      {}
       <section className="pb-20 bg-cream-100">
         <div className="container-luxury">
           <div className="space-y-20">
@@ -70,7 +63,6 @@ export default function CollectionsPage() {
                     index % 2 === 1 ? "lg:flex-row-reverse" : ""
                   }`}
                 >
-                  {}
                   <div
                     className={`relative aspect-[4/3] lg:aspect-[4/5] rounded-2xl overflow-hidden ${
                       index % 2 === 1 ? "lg:order-2" : ""
@@ -84,8 +76,6 @@ export default function CollectionsPage() {
                     />
                     <div className="absolute inset-0 bg-charcoal-900/0 group-hover:bg-charcoal-900/10 transition-colors duration-500" />
                   </div>
-
-                  {}
                   <div className={index % 2 === 1 ? "lg:order-1" : ""}>
                     <p className="overline text-gold-600 mb-4">
                       {collection.subtitle}
@@ -107,7 +97,6 @@ export default function CollectionsPage() {
           </div>
         </div>
       </section>
-
       <Footer />
     </>
   );

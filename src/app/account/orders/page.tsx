@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,7 +15,6 @@ import {
 import { cn, formatPrice, formatDate } from "@/lib/utils";
 import { Badge, Button, Divider } from "@/components/ui";
 import { accountApi, Order } from "@/lib/api";
-
 const statusConfig: Record<
   string,
   { label: string; icon: React.ElementType; color: string }
@@ -28,15 +26,12 @@ const statusConfig: Record<
   DELIVERED: { label: "Delivered", icon: CheckCircle, color: "text-emerald-500" },
   CANCELLED: { label: "Cancelled", icon: XCircle, color: "text-burgundy-500" },
 };
-
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     fetchOrders();
   }, []);
-
   const fetchOrders = async () => {
     try {
       const { orders } = await accountApi.getOrders({ limit: 20 });
@@ -47,7 +42,6 @@ export default function OrdersPage() {
       setIsLoading(false);
     }
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -59,7 +53,6 @@ export default function OrdersPage() {
         </h1>
         <p className="text-charcoal-600">Track and manage your orders</p>
       </div>
-
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-charcoal-400" />
@@ -89,11 +82,9 @@ export default function OrdersPage() {
     </motion.div>
   );
 }
-
 function OrderCard({ order }: { order: Order }) {
   const status = statusConfig[order.orderStatus] || statusConfig.CREATED;
   const StatusIcon = status.icon;
-
   return (
     <div className="bg-white rounded-2xl shadow-soft-md overflow-hidden">
       {}
@@ -115,7 +106,6 @@ function OrderCard({ order }: { order: Order }) {
           </div>
         </div>
       </div>
-
       {}
       <div className="p-6">
         <div className="flex flex-wrap gap-4 mb-6">
@@ -138,7 +128,6 @@ function OrderCard({ order }: { order: Order }) {
             </div>
           ))}
         </div>
-
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-charcoal-600">
@@ -148,7 +137,6 @@ function OrderCard({ order }: { order: Order }) {
               {formatPrice(order.total)}
             </p>
           </div>
-
           <Link href={`/account/orders/${order.id}`}>
             <Button
               variant="secondary"

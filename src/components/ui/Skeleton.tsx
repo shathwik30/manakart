@@ -1,12 +1,10 @@
 import { cn } from "@/lib/utils";
-
 interface SkeletonProps {
   className?: string;
   variant?: "text" | "circular" | "rectangular";
   width?: string | number;
   height?: string | number;
 }
-
 export function Skeleton({
   className,
   variant = "rectangular",
@@ -18,7 +16,6 @@ export function Skeleton({
     circular: "rounded-full",
     rectangular: "rounded-lg",
   };
-
   return (
     <div
       className={cn(
@@ -33,8 +30,6 @@ export function Skeleton({
     />
   );
 }
-
-
 export function ProductCardSkeleton() {
   return (
     <div className="space-y-4">
@@ -46,8 +41,6 @@ export function ProductCardSkeleton() {
     </div>
   );
 }
-
-
 export function OutfitCardSkeleton() {
   return (
     <div className="space-y-4">

@@ -1,10 +1,8 @@
 "use client";
-
 import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useLuxuryAnimations";
 import { cn } from "@/lib/utils";
-
 interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
@@ -12,7 +10,6 @@ interface ScrollRevealProps {
   direction?: "up" | "down" | "left" | "right" | "scale";
   threshold?: number;
 }
-
 /**
  * Luxury scroll reveal component
  * Reveals content elegantly when scrolled into view
@@ -25,7 +22,6 @@ export function ScrollReveal({
   threshold = 0.1,
 }: ScrollRevealProps) {
   const { ref, isVisible } = useScrollReveal({ threshold });
-
   const variants = {
     up: {
       hidden: { opacity: 0, y: 60 },
@@ -48,7 +44,6 @@ export function ScrollReveal({
       visible: { opacity: 1, scale: 1 },
     },
   };
-
   return (
     <motion.div
       ref={ref as any}
@@ -66,7 +61,6 @@ export function ScrollReveal({
     </motion.div>
   );
 }
-
 /**
  * Stagger scroll reveal for lists/grids
  */
@@ -82,7 +76,6 @@ export function ScrollRevealStagger({
   threshold?: number;
 }) {
   const { ref, isVisible } = useScrollReveal({ threshold });
-
   return (
     <motion.div
       ref={ref as any}
@@ -104,7 +97,6 @@ export function ScrollRevealStagger({
     </motion.div>
   );
 }
-
 /**
  * Stagger item for use inside ScrollRevealStagger
  */

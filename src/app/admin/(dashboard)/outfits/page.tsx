@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Outfit } from "@/lib/api";
@@ -8,13 +7,11 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
-
 export default function AdminOutfits() {
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
   const fetchOutfits = async () => {
     try {
       setLoading(true);
@@ -27,14 +24,11 @@ export default function AdminOutfits() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchOutfits();
   }, [page]);
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this outfit?")) return;
-
     try {
       await adminApi.deleteOutfit(id);
       toast.success("Outfit deleted");
@@ -43,7 +37,6 @@ export default function AdminOutfits() {
       toast.error("Failed to delete outfit");
     }
   };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -59,7 +52,6 @@ export default function AdminOutfits() {
           <span>Create Outfit</span>
         </Link>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {loading ? (
              <div className="col-span-full flex justify-center py-12">
@@ -106,7 +98,6 @@ export default function AdminOutfits() {
             ))
         )}
       </div>
-
       {}
       {totalCount > 12 && (
           <div className="mt-8 flex justify-center gap-2">

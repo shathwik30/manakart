@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Coupon } from "@/lib/api";
@@ -8,13 +7,11 @@ import { toast } from "react-hot-toast";
 import { Modal } from "@/components/ui/Modal";
 import { CouponForm } from "@/components/admin/CouponForm";
 import { formatPrice } from "@/lib/utils";
-
 export default function AdminCoupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
-
   const fetchCoupons = async () => {
     try {
       setLoading(true);
@@ -26,14 +23,11 @@ export default function AdminCoupons() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchCoupons();
   }, []);
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this coupon?")) return;
-
     try {
       await adminApi.deleteCoupon(id);
       toast.success("Coupon deleted");
@@ -42,27 +36,22 @@ export default function AdminCoupons() {
       toast.error("Failed to delete coupon");
     }
   };
-
   const handleCreate = () => {
     setSelectedCoupon(null);
     setIsModalOpen(true);
   };
-
   const handleEdit = (coupon: Coupon) => {
     setSelectedCoupon(coupon);
     setIsModalOpen(true);
   };
-
   const handleSuccess = () => {
     setIsModalOpen(false);
     fetchCoupons();
   };
-
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast.success("Code copied");
   };
-
   return (
     <div>
        <div className="flex justify-between items-center mb-8">
@@ -78,7 +67,6 @@ export default function AdminCoupons() {
           <span>Create Coupon</span>
         </button>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
            <div className="col-span-full flex justify-center py-12">
@@ -114,14 +102,12 @@ export default function AdminCoupons() {
                             </button>
                         </div>
                     </div>
-
                     <div className="flex items-baseline gap-1 mb-2">
                         <span className="text-3xl font-bold text-[#1A1A1A]">
                             {coupon.discountType === "FLAT" ? formatPrice(coupon.value) : `${coupon.value}%`}
                         </span>
                         <span className="text-sm text-[#888] uppercase">OFF</span>
                     </div>
-
                     <div className="flex gap-2">
                          <div className="text-xs text-[#8C7B75] bg-[#FAF6F0] inline-block px-2 py-1 rounded">
                             {coupon.discountType} DISCOUNT
@@ -136,7 +122,6 @@ export default function AdminCoupons() {
             ))
         )}
       </div>
-
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -10,16 +9,12 @@ import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
 import { isValidEmail, isValidPhone } from "@/lib/utils";
 import toast from "react-hot-toast";
-
 type Step = "email" | "otp" | "register";
-
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
-
   const { setUser } = useAuthStore();
-
   const [step, setStep] = useState<Step>("email");
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -27,17 +22,13 @@ export function LoginForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
-
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!isValidEmail(email)) {
       toast.error("Kindly enter a valid email address");
       return;
     }
-
     setIsLoading(true);
-
     try {
       await authApi.sendOtp(email);
       toast.success("OTP sent to your email");
@@ -48,31 +39,25 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
-
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (otp.length !== 6) {
       toast.error("Please enter your six-digit verification code");
       return;
     }
-
     setIsLoading(true);
-
     try {
       const response = await authApi.verifyOtp({
         email,
         otp,
         ...(isNewUser && { name, phone }),
       });
-
       if (response.isNewUser && !name) {
         setIsNewUser(true);
         setStep("register");
         setIsLoading(false);
         return;
       }
-
       setUser(response.user);
       toast.success("Welcome back to Succession");
       router.push(redirect);
@@ -88,22 +73,17 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!name.trim()) {
       toast.error("Please provide your name");
       return;
     }
-
     if (!isValidPhone(phone)) {
       toast.error("Please provide a valid phone number");
       return;
     }
-
     setIsLoading(true);
-
     try {
       const response = await authApi.verifyOtp({
         email,
@@ -111,7 +91,6 @@ export function LoginForm() {
         name: name.trim(),
         phone: phone.replace(/\D/g, ""),
       });
-
       setUser(response.user);
       toast.success("Your account has been successfully created");
       router.push(redirect);
@@ -121,10 +100,8 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
-
   const handleResendOtp = async () => {
     setIsLoading(true);
-
     try {
       await authApi.sendOtp(email);
       toast.success("Verification code sent to your email");
@@ -134,7 +111,6 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="bg-white rounded-2xl p-8 shadow-soft-lg">
       <AnimatePresence mode="wait">
@@ -158,7 +134,6 @@ export function LoginForm() {
                 disabled={isLoading}
               />
             </div>
-
             <Button
               type="submit"
               variant="primary"
@@ -169,13 +144,11 @@ export function LoginForm() {
             >
               Continue with Email
             </Button>
-
             <p className="text-center text-sm text-charcoal-500 mt-6">
               We&apos;ll send you a one-time password to verify your email.
             </p>
           </motion.form>
         )}
-
         {step === "otp" && (
           <motion.form
             key="otp"
@@ -192,12 +165,10 @@ export function LoginForm() {
               <ArrowLeft className="w-4 h-4" />
               Change email
             </button>
-
             <p className="text-charcoal-600 mb-6">
               Enter the 6-digit code sent to{" "}
               <span className="font-medium text-charcoal-900">{email}</span>
             </p>
-
             <div className="mb-6">
               <Input
                 type="text"
@@ -210,7 +181,6 @@ export function LoginForm() {
                 className="text-center text-2xl tracking-[0.5em] font-mono"
               />
             </div>
-
             <Button
               type="submit"
               variant="primary"
@@ -221,7 +191,6 @@ export function LoginForm() {
             >
               Verify & Continue
             </Button>
-
             <div className="text-center mt-6">
               <button
                 type="button"
@@ -234,7 +203,6 @@ export function LoginForm() {
             </div>
           </motion.form>
         )}
-
         {step === "register" && (
           <motion.form
             key="register"
@@ -251,7 +219,6 @@ export function LoginForm() {
                 Just a few more details to get started.
               </p>
             </div>
-
             <div className="space-y-4 mb-6">
               <Input
                 type="text"
@@ -263,7 +230,6 @@ export function LoginForm() {
                 variant="luxury"
                 disabled={isLoading}
               />
-
               <Input
                 type="tel"
                 label="Phone Number"
@@ -275,7 +241,6 @@ export function LoginForm() {
                 disabled={isLoading}
               />
             </div>
-
             <Button
               type="submit"
               variant="primary"
@@ -289,9 +254,7 @@ export function LoginForm() {
           </motion.form>
         )}
       </AnimatePresence>
-
       <Divider label="or" className="my-8" />
-
       <p className="text-center text-sm text-charcoal-600">
         By continuing, you agree to our{" "}
         <Link href="/terms" className="text-charcoal-900 hover:text-gold-600 underline">

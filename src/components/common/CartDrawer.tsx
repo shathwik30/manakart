@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -7,17 +6,13 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck } from "lucide-reac
 import { Drawer, Button, Divider } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
 import { formatPrice } from "@/lib/utils";
-
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, subtotal, isLoading, updateItem, removeItem } = useCartStore();
-
   const isEmpty = items.length === 0;
-
   return (
     <Drawer isOpen={isOpen} onClose={onClose} title="Shopping Bag" size="md">
       {isEmpty ? (
@@ -70,7 +65,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     )}
                   </div>
-
                   {}
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-charcoal-900 truncate">
@@ -78,7 +72,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         ? item.outfit?.title
                         : item.product?.title}
                     </h4>
-
                     {}
                     <div className="mt-1 text-sm text-charcoal-500">
                       {item.type === "outfit" ? (
@@ -87,12 +80,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <span>Size: {item.selectedSizes.size}</span>
                       )}
                     </div>
-
                     {}
                     <p className="mt-2 font-serif text-lg text-charcoal-900">
                       {formatPrice(item.price)}
                     </p>
-
                     {}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center border border-charcoal-200 rounded-lg">
@@ -120,7 +111,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
-
                       <button
                         onClick={() => removeItem(item.id)}
                         disabled={isLoading}
@@ -134,7 +124,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               ))}
             </div>
           </div>
-
           {}
           <div className="border-t border-charcoal-100 p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -143,7 +132,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {formatPrice(subtotal)}
               </span>
             </div>
-
             <motion.div
               className="flex items-center gap-2 px-4 py-3 rounded-lg bg-gold-50 border border-gold-200"
               initial={{ opacity: 0, y: 10 }}
@@ -155,7 +143,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 Delivered with Distinction
               </span>
             </motion.div>
-
             <div className="space-y-3">
               <Link href="/checkout" onClick={onClose}>
                 <Button
@@ -167,7 +154,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   Checkout
                 </Button>
               </Link>
-
               <Button variant="ghost" fullWidth onClick={onClose}>
                 Explore More
               </Button>

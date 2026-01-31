@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,7 +15,6 @@ import { Button, Input, Badge, Modal, Divider } from "@/components/ui";
 import { accountApi, Address, AddressInput } from "@/lib/api";
 import { isValidPhone, isValidPincode } from "@/lib/utils";
 import toast from "react-hot-toast";
-
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +22,6 @@ export default function AddressesPage() {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
   const [form, setForm] = useState<AddressInput>({
     name: "",
     email: "",
@@ -35,11 +32,9 @@ export default function AddressesPage() {
     pincode: "",
     isDefault: false,
   });
-
   useEffect(() => {
     fetchAddresses();
   }, []);
-
   const fetchAddresses = async () => {
     try {
       const { addresses } = await accountApi.getAddresses();
@@ -50,7 +45,6 @@ export default function AddressesPage() {
       setIsLoading(false);
     }
   };
-
   const openAddModal = () => {
     setEditingAddress(null);
     setForm({
@@ -65,7 +59,6 @@ export default function AddressesPage() {
     });
     setIsModalOpen(true);
   };
-
   const openEditModal = (address: Address) => {
     setEditingAddress(address);
     setForm({
@@ -80,12 +73,10 @@ export default function AddressesPage() {
     });
     setIsModalOpen(true);
   };
-
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingAddress(null);
   };
-
   const validateForm = (): boolean => {
     if (!form.name.trim()) {
       toast.error("Please provide your name");
@@ -117,12 +108,9 @@ export default function AddressesPage() {
     }
     return true;
   };
-
   const handleSave = async () => {
     if (!validateForm()) return;
-
     setIsSaving(true);
-
     try {
       if (editingAddress) {
         await accountApi.updateAddress(editingAddress.id, form);
@@ -131,7 +119,6 @@ export default function AddressesPage() {
         await accountApi.addAddress(form);
         toast.success("Address successfully saved");
       }
-
       fetchAddresses();
       closeModal();
     } catch (error) {
@@ -140,10 +127,8 @@ export default function AddressesPage() {
       setIsSaving(false);
     }
   };
-
   const handleDelete = async (id: string) => {
     setDeleteId(id);
-
     try {
       await accountApi.deleteAddress(id);
       toast.success("Address successfully removed");
@@ -154,10 +139,8 @@ export default function AddressesPage() {
       setDeleteId(null);
     }
   };
-
   const handleSetDefault = async (address: Address) => {
     if (address.isDefault) return;
-
     try {
       await accountApi.updateAddress(address.id, { isDefault: true });
       toast.success("Your preferred address has been updated");
@@ -166,7 +149,6 @@ export default function AddressesPage() {
       toast.error("Unable to update your preferred address");
     }
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -179,7 +161,6 @@ export default function AddressesPage() {
           </h1>
           <p className="text-charcoal-600">Manage your delivery addresses</p>
         </div>
-
         <Button
           variant="primary"
           onClick={openAddModal}
@@ -188,7 +169,6 @@ export default function AddressesPage() {
           Add Address
         </Button>
       </div>
-
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-charcoal-400" />
@@ -224,7 +204,6 @@ export default function AddressesPage() {
                   Default
                 </Badge>
               )}
-
               <h3 className="font-medium text-charcoal-900 mb-2 pr-20">
                 {address.name}
               </h3>
@@ -233,9 +212,7 @@ export default function AddressesPage() {
                 {address.city}, {address.state} - {address.pincode}
               </p>
               <p className="text-charcoal-500 text-sm">{address.phone}</p>
-
               <Divider className="my-4" />
-
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -245,7 +222,6 @@ export default function AddressesPage() {
                 >
                   Edit
                 </Button>
-
                 {!address.isDefault && (
                   <>
                     <Button
@@ -255,7 +231,6 @@ export default function AddressesPage() {
                     >
                       Set as Default
                     </Button>
-
                     <Button
                       variant="ghost"
                       size="sm"
@@ -273,7 +248,6 @@ export default function AddressesPage() {
           ))}
         </div>
       )}
-
       {}
       <Modal
         isOpen={isModalOpen}
@@ -338,7 +312,6 @@ export default function AddressesPage() {
             onChange={(e) => setForm({ ...form, state: e.target.value })}
           />
         </div>
-
         <div className="flex items-center gap-2 mt-4">
           <input
             type="checkbox"
@@ -351,7 +324,6 @@ export default function AddressesPage() {
             Set as default address
           </label>
         </div>
-
         <div className="flex gap-4 mt-8">
           <Button
             variant="primary"

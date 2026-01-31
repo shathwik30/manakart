@@ -3,8 +3,6 @@ import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,9 +10,7 @@ export async function GET(
   try {
     const { error } = await requireAdmin()
     if (error) return error
-
     const { id } = await params
-
     const coupon = await prisma.coupon.findUnique({
       where: { id },
       include: {
@@ -23,19 +19,15 @@ export async function GET(
         },
       },
     })
-
     if (!coupon) {
       return errorResponse('Coupon not found', 404)
     }
-
     return successResponse({ coupon })
   } catch (error) {
     logger.error('Admin get coupon error', { error: error instanceof Error ? error.message : 'Unknown error' })
     return errorResponse('Something went wrong', 500)
   }
 }
-
-
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -43,14 +35,11 @@ export async function PATCH(
   try {
     const { error } = await requireAdmin()
     if (error) return error
-
     const { id } = await params
-
     const existingCoupon = await prisma.coupon.findUnique({ where: { id } })
     if (!existingCoupon) {
       return errorResponse('Coupon not found', 404)
     }
-
     const body = await request.json()
     const {
       code,
@@ -62,16 +51,12 @@ export async function PATCH(
       expiresAt,
       isActive,
     } = body
-
     const updateData: Record<string, unknown> = {}
-
     if (code !== undefined) {
       if (!code || code.trim().length < 3) {
         return errorResponse('Coupon code must be at least 3 characters', 400)
       }
       const normalizedCode = code.toUpperCase().trim()
-
-      
       const existingCode = await prisma.coupon.findFirst({
         where: { code: normalizedCode, id: { not: id } },
       })
@@ -80,14 +65,12 @@ export async function PATCH(
       }
       updateData.code = normalizedCode
     }
-
     if (discountType !== undefined) {
       if (!['FLAT', 'PERCENTAGE'].includes(discountType)) {
         return errorResponse('Valid discount type is required', 400)
       }
       updateData.discountType = discountType
     }
-
     if (value !== undefined) {
       if (value <= 0) {
         return errorResponse('Valid discount value is required', 400)
@@ -98,40 +81,31 @@ export async function PATCH(
       }
       updateData.value = value
     }
-
     if (minOrderValue !== undefined) {
       updateData.minOrderValue = minOrderValue || null
     }
-
     if (maxDiscount !== undefined) {
       updateData.maxDiscount = maxDiscount || null
     }
-
     if (usageLimit !== undefined) {
       updateData.usageLimit = usageLimit || null
     }
-
     if (expiresAt !== undefined) {
       updateData.expiresAt = expiresAt ? new Date(expiresAt) : null
     }
-
     if (isActive !== undefined) {
       updateData.isActive = isActive
     }
-
     const coupon = await prisma.coupon.update({
       where: { id },
       data: updateData,
     })
-
     return successResponse({ coupon, message: 'Coupon updated successfully' })
   } catch (error) {
     logger.error('Admin update coupon error', { error: error instanceof Error ? error.message : 'Unknown error' })
     return errorResponse('Something went wrong', 500)
   }
 }
-
-
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -139,9 +113,7 @@ export async function DELETE(
   try {
     const { error } = await requireAdmin()
     if (error) return error
-
     const { id } = await params
-
     const coupon = await prisma.coupon.findUnique({
       where: { id },
       include: {
@@ -150,12 +122,9 @@ export async function DELETE(
         },
       },
     })
-
     if (!coupon) {
       return errorResponse('Coupon not found', 404)
     }
-
-    
     if (coupon._count.orders > 0) {
       await prisma.coupon.update({
         where: { id },
@@ -163,11 +132,9 @@ export async function DELETE(
       })
       return successResponse({ message: 'Coupon deactivated (has order history)' })
     }
-
     await prisma.coupon.delete({
       where: { id },
     })
-
     return successResponse({ message: 'Coupon deleted successfully' })
   } catch (error) {
     logger.error('Admin delete coupon error', { error: error instanceof Error ? error.message : 'Unknown error' })

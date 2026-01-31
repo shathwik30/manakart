@@ -1,11 +1,9 @@
 import { cn } from "@/lib/utils";
-
 interface DividerProps {
   variant?: "default" | "gold" | "subtle";
   className?: string;
   label?: string;
 }
-
 export function Divider({ variant = "default", className, label }: DividerProps) {
   const variants = {
     default:
@@ -14,7 +12,6 @@ export function Divider({ variant = "default", className, label }: DividerProps)
     subtle:
       "h-px bg-gradient-to-r from-transparent via-charcoal-100 to-transparent",
   };
-
   if (label) {
     return (
       <div className={cn("flex items-center gap-4", className)}>
@@ -24,6 +21,5 @@ export function Divider({ variant = "default", className, label }: DividerProps)
       </div>
     );
   }
-
   return <div className={cn("w-full", variants[variant], className)} />;
 }

@@ -1,19 +1,16 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Reel, Outfit } from "@/lib/api";
 import { ReelForm } from "@/components/admin/ReelForm";
 import { Plus, Trash2, Video, Loader2, Edit } from "lucide-react";
 import { toast } from "react-hot-toast";
-
 export default function AdminReels() {
   const [reels, setReels] = useState<Reel[]>([]);
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedReel, setSelectedReel] = useState<Reel | undefined>();
-
   const fetchReels = async () => {
     try {
       setLoading(true);
@@ -25,7 +22,6 @@ export default function AdminReels() {
       setLoading(false);
     }
   };
-
   const fetchOutfits = async () => {
     try {
       const data = await adminApi.getOutfits();
@@ -34,15 +30,12 @@ export default function AdminReels() {
       console.error("Failed to load outfits");
     }
   };
-
   useEffect(() => {
     fetchReels();
     fetchOutfits();
   }, []);
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this reel?")) return;
-
     try {
       await adminApi.deleteReel(id);
       toast.success("Reel deleted");
@@ -51,21 +44,17 @@ export default function AdminReels() {
       toast.error("Failed to delete reel");
     }
   };
-
   const handleOpenForm = (reel?: Reel) => {
     setSelectedReel(reel);
     setShowForm(true);
   };
-
   const handleCloseForm = () => {
     setShowForm(false);
     setSelectedReel(undefined);
   };
-
   const handleFormSuccess = () => {
     fetchReels();
   };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -81,7 +70,6 @@ export default function AdminReels() {
           <span>Add Reel</span>
         </button>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {loading ? (
           <div className="col-span-full flex justify-center py-12">
@@ -143,7 +131,6 @@ export default function AdminReels() {
           ))
         )}
       </div>
-
       {showForm && (
         <ReelForm
           reel={selectedReel}

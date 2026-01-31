@@ -1,19 +1,15 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-
 export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
@@ -22,13 +18,10 @@ export default function AdminLogin() {
         },
         body: JSON.stringify({ email, secretKey }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || "Login failed");
       }
-
       toast.success("Welcome back, Admin");
       router.push("/admin");
     } catch (error) {
@@ -37,7 +30,6 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream-100 p-4">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl border border-gold-200/20">
@@ -45,7 +37,6 @@ export default function AdminLogin() {
           <h1 className="text-3xl font-serif text-charcoal-900 mb-2">Succession</h1>
           <p className="text-charcoal-500 uppercase tracking-widest text-xs">Admin Portal</p>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-charcoal-600 mb-1">
@@ -61,7 +52,6 @@ export default function AdminLogin() {
               required
             />
           </div>
-
           <div>
             <label htmlFor="secretKey" className="block text-sm font-medium text-charcoal-600 mb-1">
               Secret Key
@@ -76,7 +66,6 @@ export default function AdminLogin() {
               required
             />
           </div>
-
           <button
             type="submit"
             disabled={isLoading}

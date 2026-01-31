@@ -1,12 +1,10 @@
 "use client";
-
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollLock } from "@/hooks";
-
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +16,6 @@ interface ModalProps {
   closeOnOverlayClick?: boolean;
   className?: string;
 }
-
 export function Modal({
   isOpen,
   onClose,
@@ -31,22 +28,16 @@ export function Modal({
   className,
 }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
-
   useScrollLock(isOpen);
-
-  
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
     }
-
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
-
   const sizes = {
     sm: "max-w-sm",
     md: "max-w-md",
@@ -54,9 +45,7 @@ export function Modal({
     xl: "max-w-xl",
     full: "max-w-4xl",
   };
-
   if (typeof window === "undefined") return null;
-
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -71,7 +60,6 @@ export function Modal({
             onClick={closeOnOverlayClick ? onClose : undefined}
             className="absolute inset-0 bg-charcoal-900/60 backdrop-blur-sm"
           />
-
           {}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -99,7 +87,6 @@ export function Modal({
                     </p>
                   )}
                 </div>
-
                 {showCloseButton && (
                   <button
                     onClick={onClose}
@@ -110,7 +97,6 @@ export function Modal({
                 )}
               </div>
             )}
-
             {}
             <div className="p-6">{children}</div>
           </motion.div>

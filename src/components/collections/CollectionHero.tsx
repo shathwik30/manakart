@@ -1,15 +1,12 @@
 "use client";
-
 import Image from "next/image";
 import { motion } from "framer-motion";
-
 interface CollectionHeroProps {
   title: string;
   subtitle: string;
   description: string;
   image: string;
 }
-
 export function CollectionHero({
   title,
   subtitle,
@@ -30,7 +27,6 @@ export function CollectionHero({
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/80 via-charcoal-900/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/60 via-transparent to-charcoal-900/30" />
       </div>
-
       {}
       <div className="relative h-full container-luxury flex items-center">
         <div className="max-w-xl pt-20">
@@ -42,7 +38,6 @@ export function CollectionHero({
           >
             {subtitle}
           </motion.p>
-
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -51,7 +46,6 @@ export function CollectionHero({
           >
             {title}
           </motion.h1>
-
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -2,37 +2,29 @@ import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')?.toUpperCase()
     const featured = searchParams.get('featured') === 'true'
     const active = searchParams.get('active') !== 'false'
-
-    // Pagination with safe defaults and limits
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '12')))
     const skip = (page - 1) * limit
-
     const where: {
       isActive?: boolean
       isFeatured?: boolean
       genderType?: 'GENTLEMEN' | 'LADY' | 'COUPLE'
     } = {}
-
     if (active) {
       where.isActive = true
     }
-
     if (featured) {
       where.isFeatured = true
     }
-
     if (type && ['GENTLEMEN', 'LADY', 'COUPLE'].includes(type)) {
       where.genderType = type as 'GENTLEMEN' | 'LADY' | 'COUPLE'
     }
-
     const [outfits, totalCount] = await Promise.all([
       prisma.outfit.findMany({
         where,
@@ -68,8 +60,6 @@ export async function GET(request: NextRequest) {
       }),
       prisma.outfit.count({ where })
     ])
-
-
     const transformedOutfits = outfits.map((outfit: any) => ({
       id: outfit.id,
       title: outfit.title,
@@ -83,7 +73,6 @@ export async function GET(request: NextRequest) {
       productCount: outfit.items.length,
       products: outfit.items.map((item: any) => item.product),
     }))
-
     return successResponse({
       outfits: transformedOutfits,
       pagination: {

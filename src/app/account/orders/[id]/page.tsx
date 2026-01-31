@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,11 +17,9 @@ import {
 import { cn, formatPrice, formatDate } from "@/lib/utils";
 import { Badge, Button, Divider } from "@/components/ui";
 import { accountApi, OrderDetail } from "@/lib/api";
-
 interface PageProps {
   params: Promise<{ id: string }>;
 }
-
 const statusConfig: Record<
   string,
   { label: string; icon: React.ElementType; color: string; bgColor: string }
@@ -64,18 +61,14 @@ const statusConfig: Record<
     bgColor: "bg-burgundy-100",
   },
 };
-
 export default function OrderDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
-
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     fetchOrder();
   }, [id]);
-
   const fetchOrder = async () => {
     try {
       const { order } = await accountApi.getOrder(id);
@@ -87,7 +80,6 @@ export default function OrderDetailPage({ params }: PageProps) {
       setIsLoading(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -95,14 +87,11 @@ export default function OrderDetailPage({ params }: PageProps) {
       </div>
     );
   }
-
   if (!order) {
     return null;
   }
-
   const status = statusConfig[order.orderStatus] || statusConfig.CREATED;
   const StatusIcon = status.icon;
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -116,7 +105,6 @@ export default function OrderDetailPage({ params }: PageProps) {
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Orders</span>
       </Link>
-
       {}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
@@ -127,7 +115,6 @@ export default function OrderDetailPage({ params }: PageProps) {
             Placed on {formatDate(order.createdAt)}
           </p>
         </div>
-
         <div
           className={cn(
             "inline-flex items-center gap-2 px-4 py-2 rounded-full",
@@ -139,7 +126,6 @@ export default function OrderDetailPage({ params }: PageProps) {
           <span className="font-medium">{status.label}</span>
         </div>
       </div>
-
       <div className="grid lg:grid-cols-3 gap-8">
         {}
         <div className="lg:col-span-2 space-y-6">
@@ -148,7 +134,6 @@ export default function OrderDetailPage({ params }: PageProps) {
             <h2 className="font-display text-lg text-charcoal-900 mb-6">
               Order Items
             </h2>
-
             <div className="space-y-4">
               {order.items.map((item) => (
                 <div
@@ -178,7 +163,6 @@ export default function OrderDetailPage({ params }: PageProps) {
               ))}
             </div>
           </div>
-
           {}
           <div className="bg-white rounded-2xl p-6 shadow-soft-md">
             <div className="flex items-center gap-3 mb-4">
@@ -187,7 +171,6 @@ export default function OrderDetailPage({ params }: PageProps) {
                 Delivery Address
               </h2>
             </div>
-
             <div className="p-4 bg-cream-50 rounded-xl">
               <p className="font-medium text-charcoal-900">
                 {order.addressSnapshot.name}
@@ -205,14 +188,12 @@ export default function OrderDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
         {}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl p-6 shadow-soft-md sticky top-32">
             <h2 className="font-display text-lg text-charcoal-900 mb-6">
               Order Summary
             </h2>
-
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-charcoal-600">Subtotal</span>
@@ -239,16 +220,13 @@ export default function OrderDetailPage({ params }: PageProps) {
                 </div>
               )}
             </div>
-
             <Divider className="mb-6" />
-
             <div className="flex justify-between items-center mb-6">
               <span className="font-medium text-charcoal-900">Total Paid</span>
               <span className="font-serif text-2xl text-charcoal-900">
                 {formatPrice(order.total)}
               </span>
             </div>
-
             {}
             <div className="p-4 bg-cream-50 rounded-xl">
               <div className="flex items-center gap-2 mb-2">

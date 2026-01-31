@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Product } from "@/lib/api";
 import { adminApi } from "@/lib/adminApi";
@@ -7,22 +6,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Loader2, X, Plus, Link as LinkIcon } from "lucide-react";
 import Image from "next/image";
-
 interface ProductFormProps {
   initialData?: Product;
   isEdit?: boolean;
 }
-
 export default function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
-  // Capitalize first letter for category to match select options
   const capitalizeCategory = (cat: string) => {
     if (!cat) return "";
     return cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
   };
-
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     category: initialData?.category ? capitalizeCategory(initialData.category) : "",
@@ -32,7 +26,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
     availableSizes: initialData?.availableSizes || [],
     stockPerSize: initialData?.stockPerSize || {},
   });
-
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newSize, setNewSize] = useState("");
@@ -43,7 +36,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
          initialData.availableSizes.every((s: string) => /^[SMLX]+$/.test(s)) ? "clothing" : "custom")
       : "clothing"
   );
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
@@ -51,7 +43,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       [name]: type === "number" ? parseFloat(value) : value,
     }));
   };
-
   const handleStockChange = (size: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -61,13 +52,10 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       },
     }));
   };
-
   const handleSizeTypeChange = (type: "clothing" | "numeric" | "onesize" | "custom") => {
     setSizeType(type);
-
     let newSizes: string[] = [];
     let newStock: Record<string, number> = {};
-
     if (type === "clothing") {
       newSizes = ["S", "M", "L", "XL"];
       newSizes.forEach(size => { newStock[size] = 10; });
@@ -78,28 +66,22 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       newSizes = ["ONE SIZE"];
       newStock["ONE SIZE"] = 50;
     }
-    // custom type starts empty
-
     setFormData(prev => ({
       ...prev,
       availableSizes: newSizes,
       stockPerSize: newStock,
     }));
   };
-
   const addCustomSize = () => {
     const size = newSize.trim().toUpperCase();
-
     if (!size) {
       toast.error("Please enter a size");
       return;
     }
-
     if (formData.availableSizes.includes(size)) {
       toast.error("Size already exists");
       return;
     }
-
     setFormData(prev => ({
       ...prev,
       availableSizes: [...prev.availableSizes, size],
@@ -108,12 +90,10 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
     setNewSize("");
     toast.success(`Size ${size} added`);
   };
-
   const removeSize = (size: string) => {
     setFormData(prev => {
       const newStock = { ...prev.stockPerSize };
       delete newStock[size];
-
       return {
         ...prev,
         availableSizes: prev.availableSizes.filter(s => s !== size),
@@ -121,58 +101,45 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       };
     });
   };
-
   const addImageUrl = () => {
     const url = newImageUrl.trim();
-
-    // Basic URL validation
     if (!url) {
       toast.error("Please enter an image URL");
       return;
     }
-
     if (!url.match(/^https?:\/\/.+/i)) {
       toast.error("Please enter a valid URL (starting with http:// or https://)");
       return;
     }
-
     setImages((prev) => [...prev, url]);
     setNewImageUrl("");
     toast.success("Image URL added");
   };
-
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validation
     if (images.length === 0) {
       toast.error("Please add at least one image URL");
       return;
     }
-
     if (formData.availableSizes.length === 0) {
       toast.error("Please add at least one size option");
       return;
     }
-
     setLoading(true);
-
     try {
       const payload = {
         title: formData.title,
         category: formData.category,
         description: formData.description,
-        basePrice: formData.basePrice * 100, // Convert to paise
+        basePrice: formData.basePrice * 100, 
         isActive: formData.isActive,
         stockPerSize: formData.stockPerSize,
         availableSizes: formData.availableSizes,
-        images: images, // Array of URL strings
+        images: images, 
       };
-
       if (isEdit && initialData) {
         await adminApi.updateProduct(initialData.id, payload);
         toast.success("Product updated successfully");
@@ -180,7 +147,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
         await adminApi.createProduct(payload);
         toast.success("Product created successfully");
       }
-
       router.push("/admin/products");
       router.refresh();
     } catch {
@@ -189,7 +155,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       setLoading(false);
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-7xl mx-auto pb-12">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -214,13 +179,11 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
             </button>
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
             <h2 className="font-medium text-charcoal-900 mb-4">Basic Information</h2>
-            
             <div>
               <label className="block text-sm font-medium text-charcoal-600 mb-1">Product Title</label>
               <input
@@ -232,7 +195,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                 required
               />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
                <div>
                   <label className="block text-sm font-medium text-charcoal-600 mb-1">Category</label>
@@ -266,7 +228,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                   />
                </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-charcoal-600 mb-1">Description</label>
               <textarea
@@ -279,10 +240,8 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
               />
             </div>
           </div>
-
           <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
               <h2 className="font-medium text-charcoal-900 mb-4">Inventory & Sizes</h2>
-
               {}
               <div>
                 <label className="block text-sm font-medium text-charcoal-600 mb-2">Size Type</label>
@@ -333,7 +292,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                   </button>
                 </div>
               </div>
-
               {}
               {sizeType === "custom" && (
                 <div className="space-y-2">
@@ -362,7 +320,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                   </div>
                 </div>
               )}
-
               {}
               {formData.availableSizes.length > 0 && (
                 <div>
@@ -394,7 +351,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
               )}
           </div>
         </div>
-
         {}
         <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
            {}
@@ -411,11 +367,9 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                   </button>
               </div>
            </div>
-
            {}
            <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
               <h2 className="font-medium text-charcoal-900">Product Images</h2>
-
               {}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-charcoal-600">Add Image URL</label>
@@ -446,7 +400,6 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                   Paste image URL from CDN (Cloudinary, ImageKit, etc.)
                 </p>
               </div>
-
               {}
               {images.length > 0 && (
                 <div className="space-y-2">
@@ -464,7 +417,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
                             className="object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EError%3C/text%3E%3C/svg%3E";
+                              target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext fill='%231f2937' font-family='sans-serif' font-size='18' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImage Not Found%3C/text%3E%3C/svg%3E";
                             }}
                           />
                           <button

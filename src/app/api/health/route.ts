@@ -1,59 +1,29 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { logger } from '@/lib/logger'
-
-interface HealthResponse {
-  status: 'healthy' | 'unhealthy'
-  timestamp: string
-  environment: string
-  version: string
-  checks: {
-    database: {
-      status: 'connected' | 'disconnected'
-      latency?: number
-    }
-  }
-}
-
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 export async function GET() {
-  const startTime = Date.now()
-  
-  const response: HealthResponse = {
-    status: 'healthy',
+  const healthCheck = {
+    status: "ok",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    version: process.env.npm_package_version || '0.1.0',
-    checks: {
-      database: {
-        status: 'disconnected',
-      },
-    },
-  }
-
-  
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV,
+    checks: { database: "unknown" },
+  };
   try {
-    const dbStartTime = Date.now()
-    await prisma.$queryRaw`SELECT 1`
-    response.checks.database = {
-      status: 'connected',
-      latency: Date.now() - dbStartTime,
-    }
+    await prisma.$queryRaw`SELECT 1`;
+    healthCheck.checks.database = "ok";
   } catch (error) {
-    response.status = 'unhealthy'
-    response.checks.database = {
-      status: 'disconnected',
-    }
-    logger.error('Health check database error', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
+    healthCheck.status = "error";
+    healthCheck.checks.database = "error";
+    console.error("Health check failed:", error);
+    return NextResponse.json(healthCheck, { status: 503 });
   }
-
-  const statusCode = response.status === 'healthy' ? 200 : 503
-
-  logger.info('Health check completed', {
-    status: response.status,
-    latency: Date.now() - startTime,
-  })
-
-  return NextResponse.json(response, { status: statusCode })
+  return NextResponse.json(healthCheck, { status: 200 });
+}
+export async function HEAD() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return new NextResponse(null, { status: 200 });
+  } catch {
+    return new NextResponse(null, { status: 503 });
+  }
 }

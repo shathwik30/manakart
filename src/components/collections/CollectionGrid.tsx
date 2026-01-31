@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,22 +7,18 @@ import { Sparkles, SlidersHorizontal } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { Badge, Button } from "@/components/ui";
 import { Outfit } from "@/lib/api";
-
 interface CollectionGridProps {
   outfits: Outfit[];
   collectionType: string;
 }
-
 const sortOptions = [
   { label: "Featured", value: "featured" },
   { label: "Price: Low to High", value: "price_asc" },
   { label: "Price: High to Low", value: "price_desc" },
   { label: "Newest", value: "newest" },
 ];
-
 export function CollectionGrid({ outfits, collectionType }: CollectionGridProps) {
   const [sortBy, setSortBy] = useState("featured");
-
   const sortedOutfits = [...outfits].sort((a, b) => {
     switch (sortBy) {
       case "price_asc":
@@ -36,7 +31,6 @@ export function CollectionGrid({ outfits, collectionType }: CollectionGridProps)
         return a.isFeatured ? -1 : 1;
     }
   });
-
   return (
     <section className="section bg-cream-100">
       <div className="container-luxury">
@@ -45,7 +39,6 @@ export function CollectionGrid({ outfits, collectionType }: CollectionGridProps)
           <p className="text-charcoal-600">
             Showing <span className="font-medium text-charcoal-900">{outfits.length}</span> outfits
           </p>
-
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-charcoal-500" />
@@ -63,7 +56,6 @@ export function CollectionGrid({ outfits, collectionType }: CollectionGridProps)
             </div>
           </div>
         </div>
-
         {}
         {sortedOutfits.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
@@ -91,7 +83,6 @@ export function CollectionGrid({ outfits, collectionType }: CollectionGridProps)
     </section>
   );
 }
-
 function OutfitCard({ outfit, index }: { outfit: Outfit; index: number }) {
   return (
     <motion.div
@@ -114,10 +105,8 @@ function OutfitCard({ outfit, index }: { outfit: Outfit; index: number }) {
               <Sparkles className="w-12 h-12 text-charcoal-300" />
             </div>
           )}
-
           {}
           <div className="absolute inset-0 bg-charcoal-900/0 group-hover:bg-charcoal-900/20 transition-colors duration-500" />
-
           {}
           <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
             <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 text-center">
@@ -127,19 +116,16 @@ function OutfitCard({ outfit, index }: { outfit: Outfit; index: number }) {
             </div>
           </div>
         </div>
-
         {}
         <div className="space-y-2">
           <h3 className="font-display text-lg text-charcoal-900 group-hover:text-gold-600 transition-colors">
             {outfit.title}
           </h3>
-
           <div className="flex items-center gap-3">
             <span className="font-serif text-xl text-charcoal-900">
               {formatPrice(outfit.bundlePrice)}
             </span>
           </div>
-
           <p className="text-sm text-charcoal-500">
             {outfit.products?.length || 0} pieces included
           </p>

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -26,28 +25,22 @@ import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { checkoutApi, accountApi, authApi, AddressInput, Address } from "@/lib/api";
 import toast from "react-hot-toast";
-
 type Step = "auth" | "address" | "payment";
-
 declare global {
   interface Window {
     Razorpay: any;
   }
 }
-
 export function CheckoutFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { items, subtotal, itemCount, fetchCart, cartId } = useCartStore();
   const { user, isAuthenticated, checkAuth } = useAuthStore();
-
   const [step, setStep] = useState<Step>("auth");
   const [isLoading, setIsLoading] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
-
-  
   const [authForm, setAuthForm] = useState({
     name: "",
     email: "",
@@ -56,8 +49,6 @@ export function CheckoutFlow() {
   });
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
-
-  
   const [address, setAddress] = useState<AddressInput>({
     name: user?.name || "",
     email: user?.email || "",
@@ -67,16 +58,12 @@ export function CheckoutFlow() {
     state: "",
     pincode: "",
   });
-
-  
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     discount: number;
   } | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-
-  
   useEffect(() => {
     if (isAuthenticated) {
       if (step === "auth") setStep("address");
@@ -84,8 +71,6 @@ export function CheckoutFlow() {
       setStep("auth");
     }
   }, [isAuthenticated]);
-
-  
   useEffect(() => {
     if (isAuthenticated) {
       accountApi.getAddresses().then((data) => {
@@ -97,8 +82,6 @@ export function CheckoutFlow() {
       }).catch(() => {});
     }
   }, [isAuthenticated]);
-
-  
   useEffect(() => {
     if (user) {
       setAddress((prev) => ({
@@ -109,37 +92,27 @@ export function CheckoutFlow() {
       }));
     }
   }, [user]);
-
-  
   useEffect(() => {
     if (otpTimer > 0) {
       const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [otpTimer]);
-
-
-  const deliveryCharge = 0; // Free delivery always
+  const deliveryCharge = 0; 
   const discount = appliedCoupon?.discount || 0;
   const total = subtotal - discount;
-
-  
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
-
     return () => {
       document.body.removeChild(script);
     };
   }, []);
-
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
-
     setIsApplyingCoupon(true);
-
     try {
       const { discount, coupon } = await checkoutApi.applyCoupon(
         couponCode.trim().toUpperCase(),
@@ -153,12 +126,10 @@ export function CheckoutFlow() {
       setIsApplyingCoupon(false);
     }
   };
-
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode("");
   };
-
   const handleSendOtp = async () => {
     if (!authForm.email || !authForm.email.includes("@")) {
       toast.error("Kindly enter a valid email address");
@@ -172,7 +143,6 @@ export function CheckoutFlow() {
       toast.error("Please provide a valid phone number");
       return;
     }
-
     setIsLoading(true);
     try {
       await authApi.sendOtp(authForm.email);
@@ -185,13 +155,11 @@ export function CheckoutFlow() {
       setIsLoading(false);
     }
   };
-
   const handleVerifyOtp = async () => {
     if (!authForm.otp || authForm.otp.length !== 6) {
       toast.error("Please enter your six-digit verification code");
       return;
     }
-
     setIsLoading(true);
     try {
       await authApi.verifyOtp({
@@ -203,22 +171,18 @@ export function CheckoutFlow() {
       await checkAuth();
       toast.success("Verification complete");
       setStep("address");
-      
-      
       setAddress(prev => ({
         ...prev,
         name: authForm.name,
         email: authForm.email,
         phone: authForm.phone
       }));
-
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Invalid OTP");
     } finally {
       setIsLoading(false);
     }
   };
-
   const getSelectedAddress = (): AddressInput | null => {
     if (selectedAddressId && !showNewAddressForm) {
       const saved = savedAddresses.find((a) => a.id === selectedAddressId);
@@ -236,47 +200,34 @@ export function CheckoutFlow() {
     }
     return address;
   };
-
   const validateAddress = (): boolean => {
     const addr = getSelectedAddress();
     if (!addr) return false;
-
     if (!addr.name || !addr.email || !addr.phone || !addr.street || !addr.city || !addr.state || !addr.pincode) {
       toast.error("Complete all address details");
       return false;
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr.email)) {
       toast.error("Kindly enter a valid email address");
       return false;
     }
-
     if (!/^[0-9]\d{9}$/.test(addr.phone.replace(/\D/g, ""))) {
-        
-        
     }
-
     if (!/^\d{6}$/.test(addr.pincode)) {
       toast.error("Please provide a valid six-digit pincode");
       return false;
     }
-
     return true;
   };
-
   const handleProceedToPayment = async () => {
     if (!validateAddress()) return;
     setStep("payment");
   };
-
   const handlePayment = async () => {
     const addr = getSelectedAddress();
     if (!addr) return;
-
     setIsLoading(true);
-
     try {
-      
       const paymentData = await checkoutApi.createPayment({
         cartId: cartId!, 
         address: addr,
@@ -286,8 +237,6 @@ export function CheckoutFlow() {
         discount,
         total,
       });
-
-      
       const options = {
         key: paymentData.razorpayKeyId,
         amount: paymentData.amount,
@@ -307,7 +256,6 @@ export function CheckoutFlow() {
               razorpaySignature: response.razorpay_signature,
               checkoutData: paymentData.checkoutData,
             });
-
             toast.success("Order placed successfully!");
             fetchCart(); 
             router.push(`/order-success?orderId=${result.order.id}`);
@@ -329,7 +277,6 @@ export function CheckoutFlow() {
           },
         },
       };
-
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (error) {
@@ -337,7 +284,6 @@ export function CheckoutFlow() {
       setIsLoading(false);
     }
   };
-
   if (itemCount === 0) {
     return (
       <div className="max-w-md mx-auto text-center py-20">
@@ -358,7 +304,6 @@ export function CheckoutFlow() {
       </div>
     );
   }
-
   return (
     <div className="grid lg:grid-cols-3 gap-10 lg:gap-16">
       {}
@@ -389,7 +334,6 @@ export function CheckoutFlow() {
             isComplete={false}
           />
         </div>
-
         {}
         {step === "auth" && !isAuthenticated && (
            <motion.div
@@ -400,7 +344,6 @@ export function CheckoutFlow() {
                 Contact Information
               </h2>
               <p className="text-charcoal-600 mb-8">Enter your details to proceed with the order.</p>
-
               <div className="bg-white rounded-2xl p-6 shadow-soft-md">
                 {!otpSent ? (
                     <div className="space-y-4">
@@ -456,7 +399,6 @@ export function CheckoutFlow() {
                                 Change Email
                             </button>
                         </div>
-
                         <div className="max-w-xs mx-auto">
                             <Input
                                 label="OTP Code"
@@ -467,7 +409,6 @@ export function CheckoutFlow() {
                                 className="text-center tracking-widest text-xl"
                             />
                         </div>
-
                         <Button
                             variant="primary"
                             size="lg"
@@ -477,7 +418,6 @@ export function CheckoutFlow() {
                         >
                             Verify & Continue
                         </Button>
-
                         <div className="text-center">
                             <button
                                 onClick={handleSendOtp}
@@ -492,7 +432,6 @@ export function CheckoutFlow() {
               </div>
            </motion.div>
         )}
-
         {}
         {step === "address" && (isAuthenticated || true) && (
           <motion.div
@@ -509,8 +448,6 @@ export function CheckoutFlow() {
                      </p>
                 )}
             </div>
-           
-
             {}
             {isAuthenticated && savedAddresses.length > 0 && !showNewAddressForm && (
               <div className="space-y-4 mb-6">
@@ -550,7 +487,6 @@ export function CheckoutFlow() {
                     </div>
                   </div>
                 ))}
-
                 <button
                   onClick={() => {
                     setShowNewAddressForm(true);
@@ -562,7 +498,6 @@ export function CheckoutFlow() {
                 </button>
               </div>
             )}
-
             {}
             {(savedAddresses.length === 0 || showNewAddressForm) && (
               <div className="bg-white rounded-2xl p-6 shadow-soft-md">
@@ -579,7 +514,6 @@ export function CheckoutFlow() {
                     ← Back to saved addresses
                   </button>
                 )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Full Name"
@@ -657,7 +591,6 @@ export function CheckoutFlow() {
                 </div>
               </div>
             )}
-
             <div className="mt-8">
               <Button
                 variant="primary"
@@ -671,7 +604,6 @@ export function CheckoutFlow() {
             </div>
           </motion.div>
         )}
-
         {}
         {step === "payment" && (
           <motion.div
@@ -684,11 +616,9 @@ export function CheckoutFlow() {
             >
               ← Back to address
             </button>
-
             <h2 className="font-display text-2xl text-charcoal-900 mb-6">
               Payment
             </h2>
-
             {}
             <div className="bg-white rounded-2xl p-6 shadow-soft-md mb-6">
               <div className="flex items-start justify-between">
@@ -710,7 +640,6 @@ export function CheckoutFlow() {
                 </button>
               </div>
             </div>
-
             {}
             <div className="bg-white rounded-2xl p-6 shadow-soft-md mb-6">
               <div className="flex items-center gap-3 mb-4">
@@ -725,7 +654,6 @@ export function CheckoutFlow() {
                 UPI, and net banking.
               </p>
             </div>
-
             <Button
               variant="gold"
               size="xl"
@@ -739,14 +667,12 @@ export function CheckoutFlow() {
           </motion.div>
         )}
       </div>
-
       {}
       <div className="lg:col-span-1">
         <div className="bg-white rounded-2xl p-6 shadow-soft-md sticky top-32">
           <h3 className="font-display text-lg text-charcoal-900 mb-6">
             Order Summary
           </h3>
-
           {}
           <div className="space-y-4 mb-6">
             {items.map((item) => (
@@ -782,9 +708,7 @@ export function CheckoutFlow() {
               </div>
             ))}
           </div>
-
           <Divider className="mb-6" />
-
           {}
           <div className="mb-6">
             {appliedCoupon ? (
@@ -821,7 +745,6 @@ export function CheckoutFlow() {
               </div>
             )}
           </div>
-
           {}
           <div className="space-y-3 mb-6">
             <div className="flex justify-between text-sm">
@@ -850,16 +773,13 @@ export function CheckoutFlow() {
               </div>
             )}
           </div>
-
           <Divider className="mb-6" />
-
           <div className="flex justify-between items-center">
             <span className="font-medium text-charcoal-900">Total</span>
             <span className="font-serif text-2xl text-charcoal-900">
               {formatPrice(total)}
             </span>
           </div>
-
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -872,7 +792,6 @@ export function CheckoutFlow() {
     </div>
   );
 }
-
 function StepIndicator({
   step,
   label,

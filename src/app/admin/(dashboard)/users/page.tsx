@@ -1,17 +1,14 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { User } from "@/lib/api";
 import { Loader2, Mail, Phone, Calendar } from "lucide-react";
 import { toast } from "react-hot-toast";
-
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -21,17 +18,14 @@ export default function AdminUsers() {
            setTotalCount(data.totalCount || 0);
       }
     } catch {
-      
       setUsers([]);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchUsers();
   }, [page]);
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -40,7 +34,6 @@ export default function AdminUsers() {
           <p className="text-[#8C7B75] text-sm">Registered customers</p>
         </div>
       </div>
-
       {loading ? (
         <div className="flex justify-center items-center h-64">
            <Loader2 className="animate-spin text-[#C9A227]" size={30} />
@@ -64,7 +57,6 @@ export default function AdminUsers() {
                             </span>
                         </div>
                     </div>
-                    
                     <div className="space-y-3 text-sm text-[#555]">
                         <div className="flex items-center gap-3">
                             <Mail size={16} className="text-[#AAA]" />
@@ -85,7 +77,6 @@ export default function AdminUsers() {
             ))}
         </div>
       )}
-
       {}
       {totalCount > 12 && (
           <div className="mt-8 flex justify-center gap-2">

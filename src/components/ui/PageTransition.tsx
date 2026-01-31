@@ -1,13 +1,10 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
-
 interface PageTransitionProps {
   children: ReactNode;
   className?: string;
 }
-
 /**
  * Luxury page transition wrapper
  * Adds elegant fade and slide animation to page changes
@@ -28,7 +25,6 @@ export function PageTransition({ children, className }: PageTransitionProps) {
     </motion.div>
   );
 }
-
 /**
  * Stagger container for animating children in sequence
  */
@@ -61,7 +57,6 @@ export function StaggerContainer({
     </motion.div>
   );
 }
-
 /**
  * Stagger item for use inside StaggerContainer
  */
@@ -91,7 +86,6 @@ export function StaggerItem({
     </motion.div>
   );
 }
-
 /**
  * Scale-in animation wrapper
  */
@@ -119,7 +113,6 @@ export function ScaleIn({
     </motion.div>
   );
 }
-
 /**
  * Slide-in from direction animation
  */
@@ -140,7 +133,6 @@ export function SlideIn({
     left: { x: 40, y: 0 },
     right: { x: -40, y: 0 },
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, ...directions[direction] }}

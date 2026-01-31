@@ -1,19 +1,16 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { DollarSign, ShoppingBag, Users, Package } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { formatPrice } from "@/lib/utils";
 import { AnalyticsChart } from "@/components/admin/AnalyticsChart";
-
 interface ChartDataPoint {
   date: string;
   dateLabel: string;
   orders: number;
   revenue: number;
 }
-
 interface Stats {
   overview: {
     totalRevenue: number;
@@ -28,11 +25,9 @@ interface Stats {
   };
   chartData: ChartDataPoint[];
 }
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -44,10 +39,8 @@ export default function AdminDashboard() {
         setLoading(false);
       }
     };
-
     fetchStats();
   }, []);
-
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -57,7 +50,6 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
   const statCards = [
     {
       title: "Total Revenue",
@@ -88,11 +80,9 @@ export default function AdminDashboard() {
       bg: "bg-orange-100",
     },
   ];
-
   return (
     <div>
       <h1 className="text-3xl font-serif text-charcoal-900 mb-8">Dashboard Overview</h1>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => {
           const Icon = stat.icon;
@@ -114,8 +104,6 @@ export default function AdminDashboard() {
           );
         })}
       </div>
-
-
       {/* Analytics Chart */}
       {stats && stats.chartData && stats.chartData.length > 0 && (
         <div className="mt-8">

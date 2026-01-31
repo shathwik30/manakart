@@ -1,19 +1,15 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { Quote, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Rating, Avatar, Divider } from "@/components/ui";
 import { Review, ReviewStats } from "@/lib/api";
-
 interface ReviewsProps {
   reviews: Review[];
   stats: ReviewStats;
 }
-
 export function Reviews({ reviews, stats }: ReviewsProps) {
   if (reviews.length === 0) return null;
-
   return (
     <section className="section bg-cream-200/50">
       <div className="container-luxury">
@@ -36,7 +32,6 @@ export function Reviews({ reviews, stats }: ReviewsProps) {
           >
             What Our Clients Say
           </motion.h2>
-
           {}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -51,7 +46,6 @@ export function Reviews({ reviews, stats }: ReviewsProps) {
             </span>
           </motion.div>
         </div>
-
         {}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {reviews.slice(0, 6).map((review, index) => (
@@ -62,7 +56,6 @@ export function Reviews({ reviews, stats }: ReviewsProps) {
     </section>
   );
 }
-
 function ReviewCard({ review, index }: { review: Review; index: number }) {
   return (
     <motion.div
@@ -76,19 +69,15 @@ function ReviewCard({ review, index }: { review: Review; index: number }) {
       <div className="w-12 h-12 rounded-full bg-gold-100 flex items-center justify-center mb-6">
         <Quote className="w-5 h-5 text-gold-600" />
       </div>
-
       {}
       <Rating value={review.rating} className="mb-4" />
-
       {}
       {review.comment && (
         <p className="text-charcoal-700 leading-relaxed mb-6">
           "{review.comment}"
         </p>
       )}
-
       <Divider variant="subtle" className="mb-6" />
-
       {}
       <div className="flex items-center gap-3">
         <Avatar name={review.userName} size="md" />

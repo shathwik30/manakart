@@ -3,16 +3,12 @@ import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { successResponse, errorResponse, isValidPhone } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
-
 export async function GET() {
   try {
     const currentUser = await getCurrentUser()
-
     if (!currentUser) {
       return errorResponse('Unauthorized', 401)
     }
-
     const user = await prisma.user.findUnique({
       where: { id: currentUser.userId },
       select: {
@@ -30,11 +26,9 @@ export async function GET() {
         },
       },
     })
-
     if (!user) {
       return errorResponse('User not found', 404)
     }
-
     return successResponse({
       user: {
         id: user.id,
@@ -52,39 +46,30 @@ export async function GET() {
     return errorResponse('Something went wrong', 500)
   }
 }
-
-
 export async function PATCH(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
-
     if (!currentUser) {
       return errorResponse('Unauthorized', 401)
     }
-
     const body = await request.json()
     const { name, phone } = body
-
     const updateData: { name?: string; phone?: string } = {}
-
     if (name !== undefined) {
       if (!name || name.trim().length < 2) {
         return errorResponse('Name must be at least 2 characters', 400)
       }
       updateData.name = name.trim()
     }
-
     if (phone !== undefined) {
       if (!phone || !isValidPhone(phone)) {
         return errorResponse('Valid 10-digit phone number is required', 400)
       }
       updateData.phone = phone.trim()
     }
-
     if (Object.keys(updateData).length === 0) {
       return errorResponse('No valid fields to update', 400)
     }
-
     const updatedUser = await prisma.user.update({
       where: { id: currentUser.userId },
       select: {
@@ -97,7 +82,6 @@ export async function PATCH(request: NextRequest) {
       },
       data: updateData,
     })
-
     return successResponse({
       user: updatedUser,
       message: 'Profile updated successfully',

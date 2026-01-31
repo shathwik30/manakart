@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Succession - E-commerce Platform
 
-## Getting Started
+Full-stack e-commerce platform built with Next.js 16, Prisma, and Cloudflare Pages.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 16.1.4 (App Router)
+- TypeScript
+- Prisma 7.3 + Neon Postgres
+- Tailwind CSS 4
+- Razorpay Payment Gateway
+- Cloudflare Pages
+
+## Quick Start
 
 ```bash
+npm install
+cp .env.example .env
+npm run db:push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm run db:push      # Push schema to database
+npm run db:studio    # Open Prisma Studio
+npm run cf:deploy    # Deploy to Cloudflare
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+Required in `.env`:
+- `DATABASE_URL` - Neon Postgres connection string
+- `JWT_SECRET` - 32+ character secret
+- `ADMIN_SECRET_KEY` - Admin login key
+- `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET`
+- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `EMAIL_FROM`
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run cf:deploy
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set environment variables in Cloudflare Dashboard before deploying.

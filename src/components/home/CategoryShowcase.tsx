@@ -1,11 +1,9 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 const categories = [
   {
     id: "gentlemen",
@@ -32,7 +30,6 @@ const categories = [
     gradient: "from-burgundy-900 to-burgundy-800",
   },
 ];
-
 export function CategoryShowcase() {
   return (
     <section className="py-24 lg:py-32 bg-gradient-to-b from-cream-50 to-white relative overflow-hidden">
@@ -43,7 +40,6 @@ export function CategoryShowcase() {
           backgroundSize: '32px 32px'
         }} />
       </div>
-
       <div className="container-luxury relative">
         {/* Premium Header */}
         <div className="text-center mb-16 lg:mb-20">
@@ -59,7 +55,6 @@ export function CategoryShowcase() {
               CURATED COLLECTIONS
             </span>
           </motion.div>
-
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -69,7 +64,6 @@ export function CategoryShowcase() {
           >
             Discover Your Style
           </motion.h2>
-
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -80,7 +74,6 @@ export function CategoryShowcase() {
             Explore our meticulously curated collections, each designed to embody timeless elegance
           </motion.p>
         </div>
-
         {/* Premium Category Cards */}
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {categories.map((category, index) => (
@@ -91,7 +84,6 @@ export function CategoryShowcase() {
     </section>
   );
 }
-
 function CategoryCard({
   category,
   index,
@@ -100,7 +92,6 @@ function CategoryCard({
   index: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -128,7 +119,6 @@ function CategoryCard({
             animate={{ opacity: isHovered ? 0.05 : 0 }}
             transition={{ duration: 0.5 }}
           />
-
           {/* Shimmer effect on hover */}
           <AnimatePresence>
             {isHovered && (
@@ -142,7 +132,6 @@ function CategoryCard({
               />
             )}
           </AnimatePresence>
-
           {/* Decorative border */}
           <motion.div
             className="absolute inset-0 rounded-2xl border-2"
@@ -151,7 +140,6 @@ function CategoryCard({
             }}
             transition={{ duration: 0.5 }}
           />
-
           {/* Content */}
           <div className="relative p-8 lg:p-10 h-full flex flex-col" style={{ zIndex: 2 }}>
             {/* Number badge */}
@@ -173,7 +161,6 @@ function CategoryCard({
                 {String(index + 1).padStart(2, "0")}
               </motion.span>
             </motion.div>
-
             {/* Text content */}
             <div className="flex-1 flex flex-col justify-center">
               <motion.p
@@ -187,7 +174,6 @@ function CategoryCard({
               >
                 {category.subtitle}
               </motion.p>
-
               <motion.h3
                 className="font-display text-3xl lg:text-4xl mb-4"
                 animate={{
@@ -197,11 +183,9 @@ function CategoryCard({
               >
                 {category.title}
               </motion.h3>
-
               <p className="text-charcoal-600 mb-8 leading-relaxed">
                 {category.description}
               </p>
-
               {/* CTA */}
               <div className="flex items-center gap-2">
                 <motion.span
@@ -226,7 +210,6 @@ function CategoryCard({
                 </motion.div>
               </div>
             </div>
-
             {/* Decorative line */}
             <motion.div
               className="absolute bottom-0 left-8 right-8 h-1 bg-gradient-to-r from-transparent via-gold-500 to-transparent"

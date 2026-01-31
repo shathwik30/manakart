@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import {
   AreaChart,
@@ -13,29 +12,21 @@ import {
 } from "recharts";
 import { formatPrice } from "@/lib/utils";
 import { TrendingUp, TrendingDown, DollarSign, ShoppingBag } from "lucide-react";
-
 interface ChartDataPoint {
   date: string;
   dateLabel: string;
   orders: number;
   revenue: number;
 }
-
 interface AnalyticsChartProps {
   data: ChartDataPoint[];
   growth: number;
 }
-
 type MetricType = "revenue" | "orders";
-
 export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
   const [activeMetric, setActiveMetric] = useState<MetricType>("revenue");
-
-  // Calculate totals
   const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0);
   const totalOrders = data.reduce((sum, item) => sum + item.orders, 0);
-
-  // Custom tooltip
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -64,7 +55,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
     }
     return null;
   };
-
   return (
     <div className="bg-white rounded-2xl shadow-soft-md border border-charcoal-100 overflow-hidden">
       {/* Header */}
@@ -76,7 +66,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
             </h2>
             <p className="text-sm text-charcoal-500">Last 30 days performance</p>
           </div>
-
           {/* Metric Selector */}
           <div className="flex items-center gap-2 p-1 bg-cream-100 rounded-lg">
             <button
@@ -103,7 +92,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
             </button>
           </div>
         </div>
-
         {/* Stats Summary */}
         <div className="grid grid-cols-2 gap-4 mt-6">
           <div className="bg-gradient-to-br from-gold-50 to-cream-100 p-4 rounded-xl">
@@ -128,7 +116,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
               <span className="text-xs text-charcoal-500">vs last month</span>
             </div>
           </div>
-
           <div className="bg-gradient-to-br from-charcoal-50 to-cream-100 p-4 rounded-xl">
             <p className="text-sm font-medium text-charcoal-600 mb-1">Total Orders</p>
             <p className="text-2xl font-bold text-charcoal-900">{totalOrders}</p>
@@ -138,7 +125,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
           </div>
         </div>
       </div>
-
       {/* Chart */}
       <div className="p-6">
         <ResponsiveContainer width="100%" height={400}>
@@ -176,7 +162,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
               }
             />
             <Tooltip content={<CustomTooltip />} />
-
             {activeMetric === "revenue" && (
               <Area
                 type="monotone"
@@ -187,7 +172,6 @@ export function AnalyticsChart({ data, growth }: AnalyticsChartProps) {
                 animationDuration={1000}
               />
             )}
-
             {activeMetric === "orders" && (
               <Area
                 type="monotone"

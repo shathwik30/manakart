@@ -3,14 +3,11 @@ import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import { ProductDetail } from "@/components/products/ProductDetail";
 import { productsApi } from "@/lib/api";
-
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-
   try {
     const { product } = await productsApi.getBySlug(slug);
     return {
@@ -21,10 +18,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Product Not Found" };
   }
 }
-
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
-
   let product;
   try {
     const data = await productsApi.getBySlug(slug);
@@ -32,11 +27,9 @@ export default async function ProductPage({ params }: PageProps) {
   } catch {
     notFound();
   }
-
   if (!product) {
     notFound();
   }
-
   return (
     <>
       <Header />

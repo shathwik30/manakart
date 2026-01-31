@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -12,7 +11,6 @@ import {
   MapPin,
   ArrowUp,
 } from "lucide-react";
-
 const footerLinks = {
   collections: [
     { label: "Gentlemen", href: "/collections/gentlemen" },
@@ -37,21 +35,17 @@ const footerLinks = {
     { label: "Refund Policy", href: "/refund-policy" },
   ],
 };
-
 const socialLinks = [
   { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
   { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
   { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
 ];
-
 export function Footer() {
   const [email, setEmail] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
-
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
   return (
     <footer className="bg-charcoal-900 text-cream-100 relative">
       {/* Scroll to top button */}
@@ -65,7 +59,6 @@ export function Footer() {
       >
         <ArrowUp className="w-5 h-5 text-white group-hover:animate-bounce" />
       </motion.button>
-
       {}
       <div className="border-b border-charcoal-700">
         <div className="container-luxury py-16 lg:py-20">
@@ -83,11 +76,9 @@ export function Footer() {
               Be the first to discover new collections, exclusive events, and
               timeless style inspiration.
             </p>
-
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                // Handle newsletter signup
                 setEmail("");
               }}
               className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
@@ -113,7 +104,6 @@ export function Footer() {
           </motion.div>
         </div>
       </div>
-
       {}
       <div className="container-luxury py-16 lg:py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 lg:gap-12">
@@ -126,7 +116,6 @@ export function Footer() {
               Curating timeless elegance for the discerning individual. Each
               piece tells a story of craftsmanship and refined taste.
             </p>
-
             {}
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => {
@@ -149,7 +138,6 @@ export function Footer() {
               })}
             </div>
           </div>
-
           {}
           <div>
             <h4 className="text-sm font-medium tracking-wider uppercase mb-6">
@@ -168,7 +156,6 @@ export function Footer() {
               ))}
             </ul>
           </div>
-
           {}
           <div>
             <h4 className="text-sm font-medium tracking-wider uppercase mb-6">
@@ -187,7 +174,6 @@ export function Footer() {
               ))}
             </ul>
           </div>
-
           {}
           <div>
             <h4 className="text-sm font-medium tracking-wider uppercase mb-6">
@@ -206,7 +192,6 @@ export function Footer() {
               ))}
             </ul>
           </div>
-
           {}
           <div className="col-span-2 md:col-span-1">
             <h4 className="text-sm font-medium tracking-wider uppercase mb-6">
@@ -245,7 +230,6 @@ export function Footer() {
           </div>
         </div>
       </div>
-
       {}
       <div className="border-t border-charcoal-700">
         <div className="container-luxury py-6">
@@ -253,7 +237,6 @@ export function Footer() {
             <p className="text-charcoal-400 text-sm">
               © {new Date().getFullYear()} Succession. All rights reserved.
             </p>
-
             <div className="flex items-center gap-6">
               {footerLinks.legal.map((link) => (
                 <Link

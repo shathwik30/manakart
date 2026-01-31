@@ -1,14 +1,11 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-
 interface LuxuryLoaderProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   fullScreen?: boolean;
 }
-
 /**
  * Luxury animated loader
  * Displays an elegant loading animation
@@ -23,13 +20,11 @@ export function LuxuryLoader({
     md: "w-12 h-12",
     lg: "w-16 h-16",
   };
-
   const dotSize = {
     sm: "w-2 h-2",
     md: "w-3 h-3",
     lg: "w-4 h-4",
   };
-
   const LoaderContent = (
     <div className={cn("relative", sizes[size])}>
       {/* Rotating circle */}
@@ -38,7 +33,6 @@ export function LuxuryLoader({
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
       />
-
       {/* Inner rotating dots */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative w-full h-full">
@@ -70,7 +64,6 @@ export function LuxuryLoader({
           ))}
         </div>
       </div>
-
       {/* Center pulse */}
       <motion.div
         className={cn(
@@ -89,7 +82,6 @@ export function LuxuryLoader({
       />
     </div>
   );
-
   if (fullScreen) {
     return (
       <motion.div
@@ -115,10 +107,8 @@ export function LuxuryLoader({
       </motion.div>
     );
   }
-
   return <div className={className}>{LoaderContent}</div>;
 }
-
 /**
  * Simple spinner loader (lightweight alternative)
  */
@@ -131,7 +121,6 @@ export function Spinner({ className, size = "md" }: {
     md: "w-6 h-6 border-2",
     lg: "w-8 h-8 border-3",
   };
-
   return (
     <motion.div
       className={cn(

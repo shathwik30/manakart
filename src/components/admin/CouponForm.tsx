@@ -1,17 +1,14 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Coupon } from "@/lib/api";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
-
 interface CouponFormProps {
   initialData?: Coupon | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
-
 export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,7 +21,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
     expiresAt: "",
     isActive: true,
   });
-
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -38,7 +34,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
         isActive: initialData.isActive,
       });
     } else {
-       
        setFormData({
         code: "",
         discountType: "FLAT",
@@ -51,11 +46,9 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
       });
     }
   }, [initialData]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const payload: any = {
         code: formData.code,
@@ -63,12 +56,10 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
         value: formData.discountType === "FLAT" ? Number(formData.value) * 100 : Number(formData.value),
         isActive: formData.isActive,
       };
-
       if (formData.minOrderValue) payload.minOrderValue = Number(formData.minOrderValue) * 100;
       if (formData.maxDiscount) payload.maxDiscount = Number(formData.maxDiscount) * 100;
       if (formData.usageLimit) payload.usageLimit = Number(formData.usageLimit);
       if (formData.expiresAt) payload.expiresAt = new Date(formData.expiresAt).toISOString();
-
       if (initialData) {
         await adminApi.updateCoupon(initialData.id, payload);
         toast.success("Coupon updated");
@@ -76,7 +67,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
         await adminApi.createCoupon(payload);
         toast.success("Coupon created");
       }
-      
       onSuccess();
     } catch (error) {
       toast.error(initialData ? "Failed to update" : "Failed to create");
@@ -85,7 +75,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
       setLoading(false);
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -112,7 +101,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
           </select>
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-4">
         <div>
            <label className="block text-sm font-medium text-charcoal-700 mb-1">Discount Type</label>
@@ -139,7 +127,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
           />
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-4">
         <div>
            <label className="block text-sm font-medium text-charcoal-700 mb-1">Min Order Value (Optional)</label>
@@ -162,7 +149,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
           />
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-4">
          <div>
            <label className="block text-sm font-medium text-charcoal-700 mb-1">Usage Limit (Optional)</label>
@@ -184,7 +170,6 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
           />
         </div>
       </div>
-
       <div className="flex justify-end gap-3 pt-4 border-t border-charcoal-100">
         <button
           type="button"

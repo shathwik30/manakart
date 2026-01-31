@@ -1,14 +1,11 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { ReelsDisplay } from "@/components/reels";
 import { Reel } from "@/lib/api";
 import { Film, Sparkles } from "lucide-react";
-
 interface ReelsSectionProps {
   reels: Reel[];
 }
-
 export function ReelsSection({ reels }: ReelsSectionProps) {
   return (
     <section className="py-24 lg:py-32 bg-gradient-to-b from-charcoal-900 via-charcoal-800 to-charcoal-900 relative overflow-hidden">
@@ -19,11 +16,9 @@ export function ReelsSection({ reels }: ReelsSectionProps) {
           backgroundSize: '48px 48px'
         }} />
       </div>
-
       {/* Decorative gradients */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold-500/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gold-600/10 rounded-full blur-3xl" />
-
       <div className="container-luxury relative">
         {/* Premium Header */}
         <div className="text-center mb-16 lg:mb-20">
@@ -40,7 +35,6 @@ export function ReelsSection({ reels }: ReelsSectionProps) {
             </span>
             <Sparkles className="w-3 h-3 text-gold-400" />
           </motion.div>
-
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -51,7 +45,6 @@ export function ReelsSection({ reels }: ReelsSectionProps) {
             See Our Collections
             <span className="block text-gold-400 mt-2">Come to Life</span>
           </motion.h2>
-
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -62,7 +55,6 @@ export function ReelsSection({ reels }: ReelsSectionProps) {
             Experience the elegance of our designs through curated visual stories.
             Each piece tells a tale of sophistication and timeless style.
           </motion.p>
-
           {/* Decorative divider */}
           <motion.div
             initial={{ opacity: 0, scaleX: 0 }}
@@ -72,7 +64,6 @@ export function ReelsSection({ reels }: ReelsSectionProps) {
             className="w-24 h-1 mx-auto mt-8 bg-gradient-to-r from-transparent via-gold-500 to-transparent rounded-full shadow-lg shadow-gold-500/50"
           />
         </div>
-
         {/* Reels Display */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}

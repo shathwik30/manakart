@@ -2,14 +2,12 @@ import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params
-
     const outfit = await prisma.outfit.findUnique({
       where: { slug },
       select: {
@@ -46,17 +44,13 @@ export async function GET(
         },
       },
     })
-
     if (!outfit) {
       return errorResponse('Outfit not found', 404)
     }
-
-    
     const individualTotal = outfit.items.reduce(
       (sum: number, item: { product: { basePrice: number } }) => sum + item.product.basePrice,
       0
     )
-
     const transformedOutfit = {
       id: outfit.id,
       title: outfit.title,
@@ -84,7 +78,6 @@ export async function GET(
         position: item.position,
       })),
     }
-
     return successResponse({ outfit: transformedOutfit })
   } catch (error) {
     logger.error('Get outfit error', { error: error instanceof Error ? error.message : 'Unknown error' })

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Order } from "@/lib/api";
@@ -7,14 +6,12 @@ import { Search, Eye, Filter, Loader2, ArrowRight } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
-
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -31,11 +28,9 @@ export default function AdminOrders() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchOrders();
   }, [page, statusFilter]);
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "CREATED": return "bg-gray-100 text-gray-800";
@@ -47,7 +42,6 @@ export default function AdminOrders() {
       default: return "bg-gray-100 text-gray-800";
     }
   };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -56,7 +50,6 @@ export default function AdminOrders() {
           <p className="text-charcoal-500 text-sm">Manage customer orders</p>
         </div>
       </div>
-
       <div className="bg-white rounded-lg shadow-sm border border-charcoal-200 overflow-hidden">
         {}
         <div className="p-4 border-b border-charcoal-200 flex gap-4 overflow-x-auto">
@@ -74,7 +67,6 @@ export default function AdminOrders() {
                </button>
            ))}
         </div>
-
         {}
         <div className="overflow-x-auto">
           <table className="w-full">

@@ -1,17 +1,14 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Review } from "@/lib/api";
 import { Star, Trash2, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
-
 export default function AdminReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
   const fetchReviews = async () => {
     try {
       setLoading(true);
@@ -24,14 +21,11 @@ export default function AdminReviews() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchReviews();
   }, [page]);
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this review?")) return;
-
     try {
       await adminApi.deleteReview(id);
       toast.success("Review deleted");
@@ -40,7 +34,6 @@ export default function AdminReviews() {
       toast.error("Failed to delete review");
     }
   };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -49,7 +42,6 @@ export default function AdminReviews() {
           <p className="text-[#8C7B75] text-sm">Moderate customer reviews</p>
         </div>
       </div>
-
       <div className="bg-white rounded-lg shadow-sm border border-[#E0E0E0] overflow-hidden">
          {}
          <div className="overflow-x-auto">
@@ -120,7 +112,6 @@ export default function AdminReviews() {
              </tbody>
           </table>
          </div>
-
          {}
          {totalCount > 10 && (
              <div className="px-6 py-4 border-t border-[#E0E0E0] flex items-center justify-end gap-2">

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Product } from "@/lib/api";
@@ -8,14 +7,12 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
-
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -28,19 +25,14 @@ export default function AdminProducts() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    
     const timer = setTimeout(() => {
       fetchProducts();
     }, 500);
-
     return () => clearTimeout(timer);
   }, [page, search]);
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
-
     try {
       await adminApi.deleteProduct(id);
       toast.success("Product deleted successfully");
@@ -49,7 +41,6 @@ export default function AdminProducts() {
       toast.error("Failed to delete product");
     }
   };
-
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
@@ -65,7 +56,6 @@ export default function AdminProducts() {
           <span>Add Product</span>
         </Link>
       </div>
-
       <div className="bg-white rounded-lg shadow-sm border border-charcoal-200 overflow-hidden">
         {}
         <div className="p-4 border-b border-charcoal-200 flex gap-4">
@@ -80,7 +70,6 @@ export default function AdminProducts() {
             />
           </div>
         </div>
-
         {}
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -173,7 +162,6 @@ export default function AdminProducts() {
             </tbody>
           </table>
         </div>
-
         {}
         <div className="px-6 py-4 border-t border-charcoal-200 flex items-center justify-between">
             <span className="text-sm text-charcoal-400">

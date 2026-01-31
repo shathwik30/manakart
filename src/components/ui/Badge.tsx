@@ -1,12 +1,10 @@
 import { cn } from "@/lib/utils";
-
 interface BadgeProps {
   children: React.ReactNode;
   variant?: "default" | "gold" | "dark" | "success" | "warning" | "danger";
   size?: "sm" | "md";
   className?: string;
 }
-
 export function Badge({
   children,
   variant = "default",
@@ -21,12 +19,10 @@ export function Badge({
     warning: "bg-amber-100 text-amber-700",
     danger: "bg-burgundy-100 text-burgundy-700",
   };
-
   const sizes = {
     sm: "px-2 py-0.5 text-xs",
     md: "px-3 py-1 text-xs",
   };
-
   return (
     <span
       className={cn(

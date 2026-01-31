@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { Star } from "lucide-react";
-
 interface RatingProps {
   value: number;
   max?: number;
@@ -8,7 +7,6 @@ interface RatingProps {
   showValue?: boolean;
   className?: string;
 }
-
 export function Rating({
   value,
   max = 5,
@@ -21,7 +19,6 @@ export function Rating({
     md: "w-4 h-4",
     lg: "w-5 h-5",
   };
-
   return (
     <div className={cn("flex items-center gap-1", className)}>
       {Array.from({ length: max }).map((_, index) => (

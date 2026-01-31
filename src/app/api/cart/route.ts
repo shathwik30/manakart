@@ -3,12 +3,10 @@ import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
     const sessionId = request.cookies.get('session_id')?.value
-
     if (!currentUser && !sessionId) {
       return successResponse({
         cart: null,
@@ -17,8 +15,6 @@ export async function GET(request: NextRequest) {
         itemCount: 0,
       })
     }
-
-    
     const cart = await prisma.cart.findFirst({
       where: currentUser
         ? { userId: currentUser.userId }
@@ -68,7 +64,6 @@ export async function GET(request: NextRequest) {
         },
       },
     })
-
     if (!cart) {
       return successResponse({
         cart: null,
@@ -77,11 +72,8 @@ export async function GET(request: NextRequest) {
         itemCount: 0,
       })
     }
-
-    
     const transformedItems = cart.items.map((item: any) => {
       if (item.isBundle && item.outfit) {
-        
         return {
           id: item.id,
           type: 'outfit' as const,
@@ -98,7 +90,6 @@ export async function GET(request: NextRequest) {
           price: item.priceSnapshot,
         }
       } else if (item.product) {
-        
         return {
           id: item.id,
           type: 'product' as const,
@@ -110,16 +101,11 @@ export async function GET(request: NextRequest) {
       }
       return null
     }).filter(Boolean)
-
-    
     const subtotal = cart.items.reduce(
       (sum: number, item: { priceSnapshot: number; quantity: number }) => sum + item.priceSnapshot * item.quantity,
       0
     )
-
-    
     const itemCount = cart.items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0)
-
     return successResponse({
       cart: {
         id: cart.id,
@@ -131,7 +117,8 @@ export async function GET(request: NextRequest) {
       itemCount,
     })
   } catch (error) {
-    logger.error('Get cart error', { error: error instanceof Error ? error.message : 'Unknown error' })
+    console.error('Get cart error:', error)
+    logger.error('Get cart error', { error: String(error) })
     return errorResponse('Something went wrong', 500)
   }
 }

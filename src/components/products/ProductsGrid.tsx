@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,20 +8,16 @@ import { cn, formatPrice } from "@/lib/utils";
 import { Badge, Button } from "@/components/ui";
 import { ScrollRevealItem, ScrollRevealStagger } from "@/components/ui";
 import { Product } from "@/lib/api";
-
 interface ProductsGridProps {
   products: Product[];
 }
-
 const sortOptions = [
   { label: "Price: Low to High", value: "price_asc" },
   { label: "Price: High to Low", value: "price_desc" },
   { label: "Newest", value: "newest" },
 ];
-
 export function ProductsGrid({ products }: ProductsGridProps) {
   const [sortBy, setSortBy] = useState("price_asc");
-
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {
       case "price_asc":
@@ -33,7 +28,6 @@ export function ProductsGrid({ products }: ProductsGridProps) {
         return 0;
     }
   });
-
   return (
     <div>
       {}
@@ -45,7 +39,6 @@ export function ProductsGrid({ products }: ProductsGridProps) {
           </span>{" "}
           products
         </p>
-
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-charcoal-500" />
           <select
@@ -61,7 +54,6 @@ export function ProductsGrid({ products }: ProductsGridProps) {
           </select>
         </div>
       </div>
-
       {}
       {sortedProducts.length > 0 ? (
         <ScrollRevealStagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
@@ -88,15 +80,12 @@ export function ProductsGrid({ products }: ProductsGridProps) {
     </div>
   );
 }
-
 function ProductCard({ product, index }: { product: Product; index: number }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-
   const stockValues = Object.values(product.stockPerSize || {});
   const totalStock = stockValues.reduce((sum: number, val) => sum + (val as number), 0);
   const isOutOfStock = totalStock === 0;
-
   return (
     <ScrollRevealItem>
       <motion.div
@@ -128,7 +117,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 <ShoppingBag className="w-12 h-12 text-charcoal-300" />
               </div>
             )}
-
             {/* Dark overlay on hover */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-t from-charcoal-900/40 via-transparent to-transparent"
@@ -136,7 +124,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               animate={{ opacity: isHovered ? 1 : 0 }}
               transition={{ duration: 0.4 }}
             />
-
             {/* Out of stock badge */}
             {isOutOfStock && (
               <motion.div
@@ -147,7 +134,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 <Badge variant="dark">Out of Stock</Badge>
               </motion.div>
             )}
-
             {/* Favorite button */}
             <motion.button
               initial={{ opacity: 0, scale: 0.8 }}
@@ -170,7 +156,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
                 )}
               />
             </motion.button>
-
             {/* Quick view CTA */}
             <motion.div
               className="absolute inset-x-4 bottom-4"
@@ -188,7 +173,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               </div>
             </motion.div>
           </div>
-
           {/* Product info */}
           <div className="space-y-2">
             <motion.p

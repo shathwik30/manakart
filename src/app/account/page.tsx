@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, Check, Loader2 } from "lucide-react";
@@ -8,41 +7,33 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { accountApi } from "@/lib/api";
 import { isValidPhone } from "@/lib/utils";
 import toast from "react-hot-toast";
-
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
-
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
-
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setPhone(user.phone || "");
     }
   }, [user]);
-
   const handleSave = async () => {
     if (!name.trim()) {
       toast.error("Please provide your name");
       return;
     }
-
     if (phone && !isValidPhone(phone)) {
       toast.error("Please provide a valid phone number");
       return;
     }
-
     setIsLoading(true);
-
     try {
       const { user: updatedUser } = await accountApi.updateProfile({
         name: name.trim(),
         phone: phone.replace(/\D/g, ""),
       });
-
       setUser(updatedUser);
       setIsEditing(false);
       toast.success("Your profile has been updated");
@@ -52,13 +43,11 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   };
-
   const handleCancel = () => {
     setName(user?.name || "");
     setPhone(user?.phone || "");
     setIsEditing(false);
   };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -73,14 +62,12 @@ export default function ProfilePage() {
             Manage your personal information
           </p>
         </div>
-
         {!isEditing && (
           <Button variant="secondary" onClick={() => setIsEditing(true)}>
             Edit Profile
           </Button>
         )}
       </div>
-
       <div className="bg-white rounded-2xl p-6 md:p-8 shadow-soft-md">
         {isEditing ? (
           <div className="space-y-6">
@@ -92,7 +79,6 @@ export default function ProfilePage() {
               leftIcon={<User className="w-5 h-5" />}
               variant="luxury"
             />
-
             <Input
               label="Email Address"
               value={user?.email || ""}
@@ -101,7 +87,6 @@ export default function ProfilePage() {
               variant="luxury"
               hint="Email cannot be changed"
             />
-
             <Input
               label="Phone Number"
               placeholder="9876543210"
@@ -112,9 +97,7 @@ export default function ProfilePage() {
               leftIcon={<Phone className="w-5 h-5" />}
               variant="luxury"
             />
-
             <Divider className="my-6" />
-
             <div className="flex gap-4">
               <Button
                 variant="primary"
@@ -142,7 +125,6 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-
             <div className="flex items-center gap-4 p-4 bg-cream-50 rounded-xl">
               <div className="w-12 h-12 rounded-full bg-charcoal-100 flex items-center justify-center">
                 <Mail className="w-6 h-6 text-charcoal-600" />
@@ -152,7 +134,6 @@ export default function ProfilePage() {
                 <p className="font-medium text-charcoal-900">{user?.email}</p>
               </div>
             </div>
-
             <div className="flex items-center gap-4 p-4 bg-cream-50 rounded-xl">
               <div className="w-12 h-12 rounded-full bg-charcoal-100 flex items-center justify-center">
                 <Phone className="w-6 h-6 text-charcoal-600" />

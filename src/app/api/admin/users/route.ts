@@ -3,19 +3,14 @@ import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
-
 export async function GET(request: NextRequest) {
   try {
     const { error } = await requireAdmin()
     if (error) return error
-
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '12') 
-    
     const skip = (page - 1) * limit
-
     const [users, totalCount] = await Promise.all([
       prisma.user.findMany({
         skip,
@@ -32,7 +27,6 @@ export async function GET(request: NextRequest) {
       }),
       prisma.user.count(),
     ])
-
     return successResponse({
       users,
       totalCount,

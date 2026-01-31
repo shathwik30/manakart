@@ -1,12 +1,10 @@
 "use client";
-
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header, Footer } from "@/components/layout";
 import { AccountSidebar } from "@/components/account/AccountSidebar";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2 } from "lucide-react";
-
 export default function AccountLayout({
   children,
 }: {
@@ -14,13 +12,11 @@ export default function AccountLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuthStore();
-
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login?redirect=/account");
     }
   }, [isLoading, isAuthenticated, router]);
-
   if (isLoading) {
     return (
       <>
@@ -34,11 +30,9 @@ export default function AccountLayout({
       </>
     );
   }
-
   if (!isAuthenticated) {
     return null;
   }
-
   return (
     <>
       <Header />
@@ -49,7 +43,6 @@ export default function AccountLayout({
             <div className="lg:col-span-1">
               <AccountSidebar user={user} />
             </div>
-
             {}
             <div className="lg:col-span-3">{children}</div>
           </div>

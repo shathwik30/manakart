@@ -1,35 +1,26 @@
 "use client";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 import { isValidEmail } from "@/lib/utils";
 import toast from "react-hot-toast";
-
 export function Newsletter() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!isValidEmail(email)) {
       toast.error("Kindly enter a valid email address");
       return;
     }
-
     setIsSubmitting(true);
-
-
     await new Promise((resolve) => setTimeout(resolve, 1500));
-
     setIsSubmitting(false);
     setIsSubmitted(true);
     toast.success("Thank you for joining the Inner Circle");
   };
-
   return (
     <section className="section bg-cream-100">
       <div className="container-narrow">
@@ -42,7 +33,6 @@ export function Newsletter() {
           {}
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-gold-100 to-transparent rounded-full blur-3xl opacity-50" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-cream-300 to-transparent rounded-full blur-2xl opacity-50" />
-
           <div className="relative text-center">
             {isSubmitted ? (
               <motion.div
@@ -71,7 +61,6 @@ export function Newsletter() {
                 >
                   Stay Connected
                 </motion.p>
-
                 <motion.h2
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -81,7 +70,6 @@ export function Newsletter() {
                 >
                   Join the Inner Circle
                 </motion.h2>
-
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -92,7 +80,6 @@ export function Newsletter() {
                   Subscribe to receive exclusive previews of new collections,
                   style inspiration, and member-only offers.
                 </motion.p>
-
                 <motion.form
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -121,7 +108,6 @@ export function Newsletter() {
                     Subscribe
                   </Button>
                 </motion.form>
-
                 <motion.p
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}

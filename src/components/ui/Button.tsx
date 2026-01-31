@@ -1,10 +1,8 @@
 "use client";
-
 import { forwardRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "gold" | "danger";
   size?: "sm" | "md" | "lg" | "xl";
@@ -14,7 +12,6 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   magnetic?: boolean;
 }
-
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -33,7 +30,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const [isHovered, setIsHovered] = useState(false);
-
     const baseStyles = `
       relative inline-flex items-center justify-center gap-2
       font-sans font-medium tracking-wide
@@ -42,7 +38,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
       overflow-hidden
     `;
-
     const variants = {
       primary: `
         bg-charcoal-900 text-cream-100
@@ -78,17 +73,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         focus-visible:ring-burgundy-500 focus-visible:ring-offset-cream-100
       `,
     };
-
     const sizes = {
       sm: "px-4 py-2 text-sm rounded-md",
       md: "px-6 py-3 text-sm rounded-lg",
       lg: "px-8 py-4 text-base rounded-lg",
       xl: "px-10 py-5 text-lg rounded-xl",
     };
-
     const ButtonContent = (
       <>
-        {/* Shimmer effect on hover */}
         {isHovered && !disabled && !isLoading && (
           <motion.div
             initial={{ x: "-100%" }}
@@ -97,8 +89,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
           />
         )}
-
-        {/* Button content */}
         <span className="relative z-10 flex items-center justify-center gap-2">
           {isLoading ? (
             <>
@@ -133,41 +123,41 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         </span>
       </>
     );
-
     if (magnetic && !disabled && !isLoading) {
+      const {
+        onDrag,
+        onDragStart,
+        onDragEnd,
+        onDragEnter,
+        onDragLeave,
+        onDragOver,
+        onDragExit,
+        onDrop,
+        onAnimationStart,
+        onAnimationEnd,
+        onAnimationIteration,
+        ...motionProps
+      } = props;
       return (
         <motion.button
           ref={ref}
           disabled={disabled || isLoading}
-          className={cn(
-            baseStyles,
-            variants[variant],
-            sizes[size],
-            fullWidth && "w-full",
-            className
-          )}
+          className={cn(baseStyles, variants[variant], sizes[size], fullWidth && "w-full", className)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          {...props}
+          {...motionProps}
         >
           {ButtonContent}
         </motion.button>
       );
     }
-
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn(
-          baseStyles,
-          variants[variant],
-          sizes[size],
-          fullWidth && "w-full",
-          className
-        )}
+        className={cn(baseStyles, variants[variant], sizes[size], fullWidth && "w-full", className)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         {...props}
@@ -177,8 +167,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
   }
 );
-
 Button.displayName = "Button";
-
 export { Button };
 export type { ButtonProps };

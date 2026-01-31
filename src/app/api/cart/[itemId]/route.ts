@@ -3,8 +3,6 @@ import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
-
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ itemId: string }> }
@@ -13,15 +11,11 @@ export async function PATCH(
     const { itemId } = await params
     const currentUser = await getCurrentUser()
     const sessionId = request.cookies.get('session_id')?.value
-
     if (!currentUser && !sessionId) {
       return errorResponse('Cart not found', 404)
     }
-
     const body = await request.json()
     const { selectedSizes, quantity } = body
-
-    
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },
       include: {
@@ -40,27 +34,19 @@ export async function PATCH(
         },
       },
     })
-
     if (!cartItem) {
       return errorResponse('Cart item not found', 404)
     }
-
-    
     const isOwner = currentUser
       ? cartItem.cart.userId === currentUser.userId
       : cartItem.cart.sessionId === sessionId
-
     if (!isOwner) {
       return errorResponse('Unauthorized', 403)
     }
-
-    
     if (quantity !== undefined) {
       if (quantity < 1) {
         return errorResponse('Quantity must be at least 1', 400)
       }
-
-      
       if (cartItem.isBundle && cartItem.outfit) {
         for (const item of cartItem.outfit.items) {
           const size = (selectedSizes || cartItem.selectedSizes as Record<string, string>)[item.product.id]
@@ -77,8 +63,6 @@ export async function PATCH(
         }
       }
     }
-
-    
     if (selectedSizes) {
       if (cartItem.isBundle && cartItem.outfit) {
         for (const item of cartItem.outfit.items) {
@@ -94,8 +78,6 @@ export async function PATCH(
         }
       }
     }
-
-    
     const updatedItem = await prisma.cartItem.update({
       where: { id: itemId },
       data: {
@@ -103,15 +85,12 @@ export async function PATCH(
         ...(quantity !== undefined && { quantity }),
       },
     })
-
     return successResponse({ item: updatedItem, message: 'Cart updated' })
   } catch (error) {
     logger.error('Update cart error', { error: error instanceof Error ? error.message : 'Unknown error' })
     return errorResponse('Something went wrong', 500)
   }
 }
-
-
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ itemId: string }> }
@@ -120,35 +99,25 @@ export async function DELETE(
     const { itemId } = await params
     const currentUser = await getCurrentUser()
     const sessionId = request.cookies.get('session_id')?.value
-
     if (!currentUser && !sessionId) {
       return errorResponse('Cart not found', 404)
     }
-
-    
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },
       include: { cart: true },
     })
-
     if (!cartItem) {
       return errorResponse('Cart item not found', 404)
     }
-
-    
     const isOwner = currentUser
       ? cartItem.cart.userId === currentUser.userId
       : cartItem.cart.sessionId === sessionId
-
     if (!isOwner) {
       return errorResponse('Unauthorized', 403)
     }
-
-    
     await prisma.cartItem.delete({
       where: { id: itemId },
     })
-
     return successResponse({ message: 'Item removed from cart' })
   } catch (error) {
     logger.error('Delete cart item error', { error: error instanceof Error ? error.message : 'Unknown error' })

@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-
 export function useScrollLock(lock: boolean) {
   useEffect(() => {
     if (lock) {
@@ -11,7 +10,6 @@ export function useScrollLock(lock: boolean) {
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
     }
-
     return () => {
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";

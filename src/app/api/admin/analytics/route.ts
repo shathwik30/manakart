@@ -2,19 +2,15 @@ import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function GET() {
   try {
     const { error } = await requireAdmin()
     if (error) return error
-
     const now = new Date()
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-
-
     const [
       totalOrders,
       totalRevenue,
@@ -32,26 +28,19 @@ export async function GET() {
       recentOrders,
       ordersLast30Days,
     ] = await Promise.all([
-      
       prisma.order.count({
         where: { paymentStatus: 'PAID' },
       }),
-
-      
       prisma.order.aggregate({
         where: { paymentStatus: 'PAID' },
         _sum: { total: true },
       }),
-
-      
       prisma.order.count({
         where: {
           paymentStatus: 'PAID',
           createdAt: { gte: startOfToday },
         },
       }),
-
-      
       prisma.order.aggregate({
         where: {
           paymentStatus: 'PAID',
@@ -59,16 +48,12 @@ export async function GET() {
         },
         _sum: { total: true },
       }),
-
-      
       prisma.order.count({
         where: {
           paymentStatus: 'PAID',
           createdAt: { gte: startOfMonth },
         },
       }),
-
-      
       prisma.order.aggregate({
         where: {
           paymentStatus: 'PAID',
@@ -76,8 +61,6 @@ export async function GET() {
         },
         _sum: { total: true },
       }),
-
-      
       prisma.order.aggregate({
         where: {
           paymentStatus: 'PAID',
@@ -88,33 +71,21 @@ export async function GET() {
         },
         _sum: { total: true },
       }),
-
-      
       prisma.user.count({
         where: { role: 'USER' },
       }),
-
-      
       prisma.product.count(),
-
-      
       prisma.outfit.count(),
-
-      
       prisma.order.groupBy({
         by: ['orderStatus'],
         _count: true,
       }),
-
-      
       prisma.orderItem.groupBy({
         by: ['productId'],
         _sum: { quantity: true },
         orderBy: { _sum: { quantity: 'desc' } },
         take: 5,
       }),
-
-      
       prisma.product.findMany({
         where: { isActive: true },
         select: {
@@ -123,8 +94,6 @@ export async function GET() {
           stockPerSize: true,
         },
       }),
-
-
       prisma.order.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -139,8 +108,6 @@ export async function GET() {
           },
         },
       }),
-
-
       prisma.order.findMany({
         where: {
           paymentStatus: 'PAID',
@@ -153,14 +120,11 @@ export async function GET() {
         orderBy: { createdAt: 'asc' },
       }),
     ])
-
-    
     const topProductIds = topSellingProducts.map((p: { productId: string }) => p.productId)
     const topProducts = await prisma.product.findMany({
       where: { id: { in: topProductIds } },
       select: { id: true, title: true, images: true },
     })
-
     const topSellingWithDetails = topSellingProducts.map((item: { productId: string; _sum: { quantity: number | null } }) => {
       const product = topProducts.find((p: { id: string }) => p.id === item.productId)
       return {
@@ -170,8 +134,6 @@ export async function GET() {
         totalSold: item._sum.quantity || 0,
       }
     })
-
-    
     const lowStock = lowStockProducts
       .map((product: { id: string; title: string; stockPerSize: any }) => {
         const stock = product.stockPerSize as Record<string, number>
@@ -184,16 +146,12 @@ export async function GET() {
       })
       .filter((p: { totalStock: number }) => p.totalStock < 10)
       .slice(0, 5)
-
-
     const lastMonthRev = lastMonthRevenue._sum.total || 0
     const thisMonthRev = monthRevenue._sum.total || 0
     const growth =
       lastMonthRev > 0
         ? Math.round(((thisMonthRev - lastMonthRev) / lastMonthRev) * 100)
         : 100
-
-
     const dailyData: Record<string, { orders: number; revenue: number }> = {}
     ordersLast30Days.forEach((order) => {
       const dateKey = order.createdAt.toISOString().split('T')[0]
@@ -203,14 +161,11 @@ export async function GET() {
       dailyData[dateKey].orders += 1
       dailyData[dateKey].revenue += order.total
     })
-
-
     const chartData = []
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
       const dateKey = date.toISOString().split('T')[0]
       const dayData = dailyData[dateKey] || { orders: 0, revenue: 0 }
-
       chartData.push({
         date: dateKey,
         dateLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -218,7 +173,6 @@ export async function GET() {
         revenue: dayData.revenue,
       })
     }
-
     return successResponse({
       overview: {
         totalOrders,

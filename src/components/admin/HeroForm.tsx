@@ -1,18 +1,15 @@
 "use client";
-
 import { useState } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { HeroContent } from "@/lib/api";
 import { Button } from "@/components/ui";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
-
 interface HeroFormProps {
   hero?: HeroContent;
   onClose: () => void;
   onSuccess: () => void;
 }
-
 export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
   const [formData, setFormData] = useState({
     title: hero?.title || "",
@@ -23,25 +20,19 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
     isActive: hero?.isActive !== undefined ? hero.isActive : true,
   });
   const [loading, setLoading] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!formData.title.trim()) {
       toast.error("Title is required");
       return;
     }
-
     if (!formData.image.trim()) {
       toast.error("Image URL is required");
       return;
     }
-
     try {
       setLoading(true);
-
       if (hero) {
-        // Update existing hero
         await adminApi.updateHeroContent(hero.id, {
           title: formData.title,
           subtitle: formData.subtitle || undefined,
@@ -52,7 +43,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
         });
         toast.success("Hero slide updated");
       } else {
-        // Create new hero
         await adminApi.createHeroContent({
           title: formData.title,
           subtitle: formData.subtitle || undefined,
@@ -63,7 +53,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
         });
         toast.success("Hero slide created");
       }
-
       onSuccess();
       onClose();
     } catch (error) {
@@ -72,7 +61,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
       setLoading(false);
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -87,7 +75,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
             <X className="w-5 h-5 text-charcoal-600" />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Image Preview */}
           {formData.image && (
@@ -97,12 +84,11 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
                 alt="Preview"
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = "https://via.placeholder.com/800x450?text=Invalid+Image+URL";
+                  e.currentTarget.src = "https://placehold.co/1920x1080/e5e7eb/1f2937?text=Image+Not+Found";
                 }}
               />
             </div>
           )}
-
           <div>
             <label className="block text-sm font-medium text-charcoal-900 mb-2">
               Image URL *
@@ -113,7 +99,7 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               onChange={(e) =>
                 setFormData({ ...formData, image: e.target.value })
               }
-              placeholder="https://example.com/hero-image.jpg"
+              placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500"
               required
             />
@@ -121,7 +107,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               Use high-resolution images (recommended: 1920x1080px or larger)
             </p>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-charcoal-900 mb-2">
               Title *
@@ -140,7 +125,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               Main headline displayed on the hero slide
             </p>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-charcoal-900 mb-2">
               Subtitle
@@ -158,7 +142,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               Optional description text below the title
             </p>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-charcoal-900 mb-2">
@@ -174,7 +157,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
                 className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-charcoal-900 mb-2">
                 CTA Button Link
@@ -190,7 +172,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               />
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -205,7 +186,6 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               Active (visible on website)
             </label>
           </div>
-
           <div className="flex gap-3 pt-4 border-t border-charcoal-100">
             <Button
               variant="secondary"

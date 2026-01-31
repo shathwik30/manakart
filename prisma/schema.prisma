@@ -1,15 +1,11 @@
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../node_modules/.prisma/client"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
-  provider     = "postgresql"
-  relationMode = "prisma"
+  provider = "postgresql"
 }
-
-
 
 model User {
   id        String   @id @default(cuid())
@@ -62,8 +58,6 @@ enum Role {
   USER
   ADMIN
 }
-
-
 
 model Product {
   id             String   @id @default(cuid())
@@ -129,8 +123,6 @@ enum GenderType {
   COUPLE
 }
 
-
-
 model Cart {
   id        String     @id @default(cuid())
   user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -160,8 +152,6 @@ model CartItem {
   @@index([cartId])
   @@map("cart_items")
 }
-
-
 
 model Order {
   id              String        @id @default(cuid())
@@ -221,8 +211,6 @@ enum OrderStatus {
   CANCELLED
 }
 
-
-
 model Coupon {
   id            String       @id @default(cuid())
   code          String       @unique
@@ -246,8 +234,6 @@ enum DiscountType {
   PERCENTAGE
 }
 
-
-
 model Review {
   id         String   @id @default(cuid())
   userName   String
@@ -261,8 +247,6 @@ model Review {
   @@index([isFeatured])
   @@map("reviews")
 }
-
-
 
 model HeroContent {
   id        String   @id @default(cuid())

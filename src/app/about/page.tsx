@@ -3,22 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Header, Footer } from "@/components/layout";
 import { Divider } from "@/components/ui";
-
 export const metadata: Metadata = {
   title: "About Us",
   description: "Discover the story behind Succession - curating timeless elegance since 1999.",
 };
-
 export default function AboutPage() {
   return (
     <>
       <Header />
-
-      {}
       <section className="relative h-[60vh] min-h-[500px] overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600"
+            src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1920"
             alt="Craftsmanship"
             fill
             priority
@@ -26,7 +22,6 @@ export default function AboutPage() {
           />
           <div className="absolute inset-0 bg-charcoal-900/60" />
         </div>
-
         <div className="relative h-full container-luxury flex items-center justify-center text-center">
           <div className="max-w-2xl pt-20">
             <p className="overline text-gold-400 mb-4">Our Story</p>
@@ -40,8 +35,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {}
       <section className="section bg-cream-100">
         <div className="container-narrow">
           <div className="prose prose-lg mx-auto text-center">
@@ -66,8 +59,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {}
       <section className="section bg-white">
         <div className="container-luxury">
           <div className="text-center mb-16">
@@ -76,7 +67,6 @@ export default function AboutPage() {
               What We Stand For
             </h2>
           </div>
-
           <div className="grid md:grid-cols-3 gap-10">
             {[
               {
@@ -110,8 +100,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      {}
       <section className="section bg-charcoal-900">
         <div className="container-narrow text-center">
           <h2 className="font-display text-3xl md:text-4xl text-cream-100 mb-6">
@@ -121,7 +109,6 @@ export default function AboutPage() {
             Discover our curated collections and find pieces that speak to your
             sense of style.
           </p>
-          
           <Link
             href="/collections"
             className="btn-gold inline-flex items-center gap-2"
@@ -130,7 +117,6 @@ export default function AboutPage() {
           </Link>
         </div>
       </section>
-
       <Footer />
     </>
   );

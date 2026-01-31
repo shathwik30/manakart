@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,41 +7,30 @@ import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { HeroContent } from "@/lib/api";
-
 interface HeroProps {
   slides: HeroContent[];
 }
-
 export function Hero({ slides }: HeroProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-
-  
   useEffect(() => {
     if (!isAutoPlaying || slides.length <= 1) return;
-
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
-
     return () => clearInterval(interval);
   }, [isAutoPlaying, slides.length]);
-
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
     setIsAutoPlaying(false);
-    
     setTimeout(() => setIsAutoPlaying(true), 10000);
   };
-
   const goToPrev = () => {
     goToSlide((currentSlide - 1 + slides.length) % slides.length);
   };
-
   const goToNext = () => {
     goToSlide((currentSlide + 1) % slides.length);
   };
-
   if (slides.length === 0) {
     return (
       <section className="relative h-screen bg-charcoal-900 flex items-center justify-center">
@@ -57,7 +45,6 @@ export function Hero({ slides }: HeroProps) {
       </section>
     );
   }
-
   return (
     <section className="relative h-screen overflow-hidden -mt-20">
       {}
@@ -83,7 +70,6 @@ export function Hero({ slides }: HeroProps) {
             <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/50 via-transparent to-charcoal-900/30" />
           </div>
-
           {}
           <div className="relative h-full container-luxury flex items-center">
             <div className="max-w-2xl pt-20">
@@ -95,7 +81,6 @@ export function Hero({ slides }: HeroProps) {
               >
                 New Collection
               </motion.p>
-
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -104,7 +89,6 @@ export function Hero({ slides }: HeroProps) {
               >
                 {slides[currentSlide].title}
               </motion.h1>
-
               {slides[currentSlide].subtitle && (
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -115,7 +99,6 @@ export function Hero({ slides }: HeroProps) {
                   {slides[currentSlide].subtitle}
                 </motion.p>
               )}
-
               {slides[currentSlide].ctaText && slides[currentSlide].ctaLink && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -138,7 +121,6 @@ export function Hero({ slides }: HeroProps) {
           </div>
         </motion.div>
       </AnimatePresence>
-
       {}
       {slides.length > 1 && (
         <>
@@ -162,7 +144,6 @@ export function Hero({ slides }: HeroProps) {
           </motion.button>
         </>
       )}
-
       {}
       {slides.length > 1 && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10 backdrop-blur-sm bg-white/5 px-4 py-3 rounded-full border border-white/10">
@@ -192,7 +173,6 @@ export function Hero({ slides }: HeroProps) {
           ))}
         </div>
       )}
-
       {}
       <motion.div
         initial={{ opacity: 0 }}

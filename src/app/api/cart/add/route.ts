@@ -3,27 +3,19 @@ import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { successResponse, errorResponse, generateSessionId } from '@/lib/utils'
 import { logger } from '@/lib/logger'
-
 export async function POST(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser()
     let sessionId = request.cookies.get('session_id')?.value
-
     const body = await request.json()
     const { outfitId, productId, selectedSizes, quantity = 1, isBundle = false } = body
-
-    
     if (!outfitId && !productId) {
       return errorResponse('Either outfitId or productId is required', 400)
     }
-
     if (!selectedSizes || typeof selectedSizes !== 'object') {
       return errorResponse('Selected sizes are required', 400)
     }
-
     let priceSnapshot = 0
-
-    
     if (isBundle && outfitId) {
       const outfit = await prisma.outfit.findUnique({
         where: { id: outfitId, isActive: true },
@@ -37,12 +29,9 @@ export async function POST(request: NextRequest) {
           },
         },
       })
-
       if (!outfit) {
         return errorResponse('Outfit not found', 404)
       }
-
-      
       for (const item of outfit.items) {
         const size = selectedSizes[item.product.id]
         if (!size) {
@@ -56,20 +45,15 @@ export async function POST(request: NextRequest) {
           return errorResponse(`Insufficient stock for selected size`, 400)
         }
       }
-
       priceSnapshot = outfit.bundlePrice
     }
-
-    
     if (!isBundle && productId) {
       const product = await prisma.product.findUnique({
         where: { id: productId, isActive: true },
       })
-
       if (!product) {
         return errorResponse('Product not found', 404)
       }
-
       const size = selectedSizes.size
       if (!size) {
         return errorResponse('Size is required', 400)
@@ -81,11 +65,8 @@ export async function POST(request: NextRequest) {
       if (!stock[size] || stock[size] < quantity) {
         return errorResponse('Insufficient stock for selected size', 400)
       }
-
       priceSnapshot = product.basePrice
     }
-
-    
     let cart = await prisma.cart.findFirst({
       where: currentUser
         ? { userId: currentUser.userId }
@@ -93,12 +74,9 @@ export async function POST(request: NextRequest) {
           ? { sessionId }
           : { id: 'none' }, 
     })
-
-    
     if (!currentUser && !sessionId) {
       sessionId = generateSessionId()
     }
-
     if (!cart) {
       cart = await prisma.cart.create({
         data: {
@@ -107,8 +85,6 @@ export async function POST(request: NextRequest) {
         },
       })
     }
-
-    
     const existingItem = await prisma.cartItem.findFirst({
       where: {
         cartId: cart.id,
@@ -117,9 +93,7 @@ export async function POST(request: NextRequest) {
         isBundle,
       },
     })
-
     if (existingItem) {
-      
       await prisma.cartItem.update({
         where: { id: existingItem.id },
         data: {
@@ -128,7 +102,6 @@ export async function POST(request: NextRequest) {
         },
       })
     } else {
-      
       await prisma.cartItem.create({
         data: {
           cartId: cart.id,
@@ -141,20 +114,14 @@ export async function POST(request: NextRequest) {
         },
       })
     }
-
-    
     await prisma.cart.update({
       where: { id: cart.id },
       data: { updatedAt: new Date() },
     })
-
-    
     const response = NextResponse.json(
       { success: true, data: { message: 'Item added to cart' } },
       { status: 200 }
     )
-
-    
     if (!currentUser && sessionId) {
       response.cookies.set('session_id', sessionId, {
         httpOnly: true,
@@ -164,7 +131,6 @@ export async function POST(request: NextRequest) {
         path: '/',
       })
     }
-
     return response
   } catch (error) {
     logger.error('Add to cart error', { error: error instanceof Error ? error.message : 'Unknown error' })

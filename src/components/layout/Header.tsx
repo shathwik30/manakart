@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,7 +15,6 @@ import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { CartDrawer } from "@/components/common/CartDrawer";
 import { MobileMenu } from "./MobileMenu";
-
 const navigation = [
   {
     label: "Collections",
@@ -29,36 +27,27 @@ const navigation = [
   },
   { label: "About", href: "/about" },
 ];
-
 export function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-
   const { itemCount, isOpen: isCartOpen, openCart, closeCart } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
-
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
       setShowBanner(window.scrollY < 50);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
-
   const isHomePage = pathname === "/";
   const shouldBeTransparent = isHomePage && !isScrolled;
-
   return (
     <>
       <header
@@ -85,7 +74,6 @@ export function Header() {
             </motion.div>
           )}
         </AnimatePresence>
-
         {}
         <div className="container-luxury">
           <div className="flex items-center justify-between h-20">
@@ -104,7 +92,6 @@ export function Header() {
               >
                 <Menu className="w-6 h-6" />
               </button>
-
               {}
               <nav className="hidden lg:flex items-center gap-8">
                 {navigation.map((item) => (
@@ -139,7 +126,6 @@ export function Header() {
                         />
                       )}
                     </Link>
-
                     {}
                     {item.children && (
                       <AnimatePresence>
@@ -186,7 +172,6 @@ export function Header() {
                 ))}
               </nav>
             </div>
-
             {}
             <Link
               href="/"
@@ -201,7 +186,6 @@ export function Header() {
                 Succession
               </h1>
             </Link>
-
             {}
             <div className="flex items-center gap-2 lg:gap-4 flex-1 justify-end">
               {}
@@ -219,7 +203,6 @@ export function Header() {
                   <User className="w-5 h-5" />
                 </motion.div>
               </Link>
-
               {}
               <motion.button
                 onClick={openCart}
@@ -258,17 +241,14 @@ export function Header() {
           </div>
         </div>
       </header>
-
       {}
       <div className={cn("h-20", !isHomePage && "mt-10")} />
-
       {}
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         navigation={navigation}
       />
-
       {}
       <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
     </>

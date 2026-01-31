@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState, use } from "react";
 import { adminApi } from "@/lib/adminApi";
 import { Order } from "@/lib/api";
@@ -8,18 +7,15 @@ import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { formatPrice } from "@/lib/utils";
-
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-
   useEffect(() => {
     fetchOrder();
   }, [id]);
-
   const fetchOrder = async () => {
     try {
       const data = await adminApi.getOrder(id);
@@ -30,7 +26,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       setLoading(false);
     }
   };
-
   const handleStatusUpdate = async (newStatus: string) => {
     if (!order) return;
     setUpdating(true);
@@ -44,7 +39,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       setUpdating(false);
     }
   };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
@@ -52,7 +46,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-
   if (!order) {
     return (
       <div className="text-center py-12">
@@ -63,7 +56,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4 mb-6">
@@ -79,7 +71,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </p>
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {}
         <div className="lg:col-span-2 space-y-6">
@@ -111,7 +102,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
         </div>
-
         {}
         <div className="space-y-6">
              {}
@@ -135,7 +125,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                      ))}
                 </div>
              </div>
-
              {}
              <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200">
                 <h2 className="font-medium text-charcoal-900 mb-4">Customer</h2>
@@ -161,8 +150,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </div>
                 </div>
              </div>
-
-
              {}
              <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200">
                 <h2 className="font-medium text-charcoal-900 mb-4">Shipping Address</h2>
