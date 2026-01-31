@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
@@ -91,3 +92,4 @@ export async function PATCH(request: NextRequest) {
     return errorResponse('Something went wrong', 500)
   }
 }
+

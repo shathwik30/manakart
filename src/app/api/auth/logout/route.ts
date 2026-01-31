@@ -1,3 +1,4 @@
+
 import { clearAuthCookie } from '@/lib/auth'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
@@ -10,3 +11,4 @@ export async function POST() {
     return errorResponse('Something went wrong', 500)
   }
 }
+

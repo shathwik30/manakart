@@ -1,3 +1,4 @@
+
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
@@ -23,3 +24,4 @@ export async function GET() {
     return errorResponse('Something went wrong', 500)
   }
 }
+

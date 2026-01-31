@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse, calculateDiscount, formatPrice } from '@/lib/utils'
@@ -54,3 +55,4 @@ export async function POST(request: NextRequest) {
     return errorResponse('Something went wrong', 500)
   }
 }
+

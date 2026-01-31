@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import "./globals.css";
+
+
 export const metadata: Metadata = {
   title: {
     default: "Succession | Luxury Fashion House",

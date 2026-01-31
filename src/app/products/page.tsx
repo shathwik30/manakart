@@ -1,16 +1,20 @@
+
 import { Metadata } from "next";
 import { Header, Footer } from "@/components/layout";
 import { ProductsGrid } from "@/components/products/ProductsGrid";
-import { productsApi, Product } from "@/lib/api";
+import { productService } from "@/lib/services/product-service";
+import { Product } from "@/lib/api";
+
 export const metadata: Metadata = {
   title: "All Products",
   description: "Explore our exquisite collection of luxury fashion pieces.",
 };
+
 export default async function ProductsPage() {
   let products: Product[] = [];
   try {
-    const data = await productsApi.getAll();
-    products = data.products;
+    const data = await productService.getProducts();
+    products = data.products as unknown as Product[];
   } catch (error) {
     console.error("Failed to fetch products:", error);
   }

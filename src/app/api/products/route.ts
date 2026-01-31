@@ -1,58 +1,27 @@
+
 import { NextRequest } from 'next/server'
-import prisma from '@/lib/prisma'
+import { productService } from '@/lib/services/product-service'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const category = searchParams.get('category')
+    const category = searchParams.get('category') || undefined
     const active = searchParams.get('active') !== 'false'
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')))
-    const skip = (page - 1) * limit
-    const where: {
-      isActive?: boolean
-      category?: string
-    } = {}
-    if (active) {
-      where.isActive = true
-    }
-    if (category) {
-      where.category = category
-    }
-    const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip,
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          category: true,
-          description: true,
-          basePrice: true,
-          images: true,
-          availableSizes: true,
-          stockPerSize: true,
-          isActive: true,
-        },
-      }),
-      prisma.product.count({ where })
-    ])
-    return successResponse({
-      products,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasMore: skip + products.length < totalCount
-      }
+
+    const data = await productService.getProducts({
+      category,
+      isActive: active ? true : undefined,
+      page,
+      limit,
     })
+
+    return successResponse(data)
   } catch (error) {
     logger.error('Get products error', { error: error instanceof Error ? error.message : 'Unknown error' })
     return errorResponse('Something went wrong', 500)
   }
 }
+

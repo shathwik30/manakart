@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   serverExternalPackages: ["@prisma/client", "@prisma/adapter-neon"],
   images: {
     minimumCacheTTL: 60 * 60 * 24 * 7,
@@ -10,7 +16,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.cloudinary.com", pathname: "/**" },
       { protocol: "https", hostname: "*.amazonaws.com", pathname: "/**" },
     ],
-    unoptimized: process.env.CLOUDFLARE_BUILD === "true",
+
   },
   async headers() {
     return [

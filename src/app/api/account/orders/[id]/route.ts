@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
@@ -83,3 +84,4 @@ export async function GET(
     return errorResponse('Something went wrong', 500)
   }
 }
+

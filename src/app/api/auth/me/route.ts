@@ -1,3 +1,4 @@
+
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { successResponse, errorResponse } from '@/lib/utils'
@@ -28,3 +29,4 @@ export async function GET() {
     return errorResponse('Something went wrong', 500)
   }
 }
+

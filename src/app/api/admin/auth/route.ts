@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { generateToken, setAuthCookie } from '@/lib/auth'
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     if (!user || user.role !== 'ADMIN') {
       return errorResponse('Admin account not found', 404)
     }
-    const token = generateToken({
+    const token = await generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
@@ -40,3 +41,4 @@ export async function POST(request: NextRequest) {
     return errorResponse('Something went wrong', 500)
   }
 }
+

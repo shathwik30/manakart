@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
@@ -150,3 +151,4 @@ export async function POST(request: NextRequest) {
     return errorResponse('Something went wrong', 500)
   }
 }
+

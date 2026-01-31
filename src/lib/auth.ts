@@ -1,47 +1,63 @@
-import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
+import { jwtVerify, SignJWT } from "jose";
+
 const JWT_SECRET = process.env.JWT_SECRET!;
+const secret = new TextEncoder().encode(JWT_SECRET);
+
 export interface JWTPayload {
   userId: string;
   email: string;
   role: "USER" | "ADMIN";
 }
-export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+
+export async function generateToken(payload: JWTPayload): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(secret);
 }
+
 export async function verifyAuthToken(token: string): Promise<JWTPayload | null> {
   try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
     return payload as unknown as JWTPayload;
   } catch {
     return null;
   }
 }
-export function verifyToken(token: string): JWTPayload | null {
+
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const { payload } = await jwtVerify(token, secret);
+    return payload as unknown as JWTPayload;
   } catch {
     return null;
   }
 }
+
 export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
+
 export async function hashOTP(otp: string): Promise<string> {
   return bcrypt.hash(otp, 10);
 }
+
 export async function verifyOTP(otp: string, hashedOTP: string): Promise<boolean> {
   return bcrypt.compare(otp, hashedOTP);
 }
+
 export async function getCurrentUser(): Promise<JWTPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
+
   if (!token) return null;
+
   return verifyToken(token);
 }
+
 export async function setAuthCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set("token", token, {
@@ -52,6 +68,7 @@ export async function setAuthCookie(token: string): Promise<void> {
     path: "/",
   });
 }
+
 export async function clearAuthCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete("token");

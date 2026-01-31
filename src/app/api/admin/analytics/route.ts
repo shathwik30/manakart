@@ -1,3 +1,4 @@
+
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
 import { successResponse, errorResponse } from '@/lib/utils'
@@ -204,3 +205,4 @@ export async function GET() {
     return errorResponse('Something went wrong', 500)
   }
 }
+

@@ -1,3 +1,4 @@
+
 import { Header, Footer } from "@/components/layout";
 import {
   Hero,

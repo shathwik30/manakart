@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { verifyOTP, generateToken, setAuthCookie } from '@/lib/auth'
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
       })
       isNewUser = true
     }
-    const token = generateToken({
+    const token = await generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
@@ -82,3 +83,4 @@ export async function POST(request: NextRequest) {
     return errorResponse('Something went wrong', 500)
   }
 }
+

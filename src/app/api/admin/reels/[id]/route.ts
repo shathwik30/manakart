@@ -1,3 +1,4 @@
+
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/admin'
@@ -96,3 +97,4 @@ export async function DELETE(
     return errorResponse('Something went wrong', 500)
   }
 }
+

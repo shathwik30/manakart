@@ -1,3 +1,4 @@
+
 import { Header, Footer } from "@/components/layout";
 import { CollectionGrid } from "@/components/collections/CollectionGrid";
 import { outfitsApi } from "@/lib/api";
