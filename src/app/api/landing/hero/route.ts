@@ -2,6 +2,9 @@
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
+
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const heroContent = await prisma.heroContent.findMany({

@@ -11,6 +11,8 @@ import {
 } from "@/components/home";
 import { landingService } from "@/lib/services/landing-service";
 
+export const dynamic = 'force-dynamic'
+
 async function getHomePageData() {
   try {
     const [heroData, reviewsData, reelsData] = await Promise.all([
