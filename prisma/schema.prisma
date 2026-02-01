@@ -60,9 +60,9 @@ enum Role {
 }
 
 model Product {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   title          String
-  slug           String   @unique
+  slug           String    @unique
   category       String
   description    String?
   basePrice      Int
@@ -70,9 +70,10 @@ model Product {
   sizeChart      Json?
   availableSizes String[]
   stockPerSize   Json
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  isActive       Boolean   @default(true)
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   outfitItems OutfitItem[]
   cartItems   CartItem[]
@@ -80,6 +81,7 @@ model Product {
 
   @@index([category])
   @@index([isActive])
+  @@index([deletedAt])
   @@map("products")
 }
 

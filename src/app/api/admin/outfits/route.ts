@@ -104,10 +104,10 @@ export async function POST(request: NextRequest) {
       return errorResponse('At least one product is required', 400)
     }
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
+      where: { id: { in: productIds }, deletedAt: null },
     })
     if (products.length !== productIds.length) {
-      return errorResponse('One or more products not found', 400)
+      return errorResponse('One or more products not found or have been deleted', 400)
     }
     let slug = slugify(title)
     const existingSlug = await prisma.outfit.findUnique({ where: { slug } })

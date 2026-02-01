@@ -17,7 +17,8 @@ export const productService = {
     const where: {
       isActive?: boolean;
       category?: string;
-    } = {};
+      deletedAt: null;
+    } = { deletedAt: null };
 
     if (isActive !== undefined) {
       where.isActive = isActive;
@@ -62,8 +63,8 @@ export const productService = {
   },
 
   async getProductBySlug(slug: string) {
-    const product = await prisma.product.findUnique({
-      where: { slug },
+    const product = await prisma.product.findFirst({
+      where: { slug, deletedAt: null },
       select: {
           id: true,
           title: true,

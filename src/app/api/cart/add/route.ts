@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
       priceSnapshot = outfit.bundlePrice
     }
     if (!isBundle && productId) {
-      const product = await prisma.product.findUnique({
-        where: { id: productId, isActive: true },
+      const product = await prisma.product.findFirst({
+        where: { id: productId, isActive: true, deletedAt: null },
       })
       if (!product) {
         return errorResponse('Product not found', 404)

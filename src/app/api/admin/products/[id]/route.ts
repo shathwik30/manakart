@@ -12,8 +12,8 @@ export async function GET(
     const { error } = await requireAdmin()
     if (error) return error
     const { id } = await params
-    const product = await prisma.product.findUnique({
-      where: { id },
+    const product = await prisma.product.findFirst({
+      where: { id, deletedAt: null },
       include: {
         outfitItems: {
           select: {
@@ -45,7 +45,7 @@ export async function PATCH(
     const { error } = await requireAdmin()
     if (error) return error
     const { id } = await params
-    const existingProduct = await prisma.product.findUnique({ where: { id } })
+    const existingProduct = await prisma.product.findFirst({ where: { id, deletedAt: null } })
     if (!existingProduct) {
       return errorResponse('Product not found', 404)
     }
@@ -137,27 +137,19 @@ export async function DELETE(
     if (error) return error
     const { id } = await params
     const product = await prisma.product.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { outfitItems: true, orderItems: true },
-        },
-      },
+      where: { id, deletedAt: null },
     })
     if (!product) {
       return errorResponse('Product not found', 404)
     }
-    if (product._count.orderItems > 0) {
-      return errorResponse(
-        'Cannot delete product with existing orders. Deactivate instead.',
-        400
-      )
-    }
+    // Soft delete: set deletedAt timestamp instead of actually deleting
+    // This preserves the product for order history
     await prisma.outfitItem.deleteMany({
       where: { productId: id },
     })
-    await prisma.product.delete({
+    await prisma.product.update({
       where: { id },
+      data: { deletedAt: new Date(), isActive: false },
     })
     return successResponse({ message: 'Product deleted successfully' })
   } catch (error) {

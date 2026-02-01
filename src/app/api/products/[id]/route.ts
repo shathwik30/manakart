@@ -9,8 +9,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    let product = await prisma.product.findUnique({
-      where: { slug: id },
+    let product = await prisma.product.findFirst({
+      where: { slug: id, deletedAt: null },
       select: {
         id: true,
         title: true,
@@ -27,8 +27,8 @@ export async function GET(
       },
     })
     if (!product) {
-      product = await prisma.product.findUnique({
-        where: { id },
+      product = await prisma.product.findFirst({
+        where: { id, deletedAt: null },
         select: {
           id: true,
           title: true,
