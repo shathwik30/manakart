@@ -1,122 +1,106 @@
 import { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { Header, Footer } from "@/components/layout";
-import { Divider } from "@/components/ui";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { ShoppingBag, Truck, Shield, Headphones } from "lucide-react";
+
 export const metadata: Metadata = {
-  title: "About Us",
-  description: "Discover the story behind Succession - curating timeless elegance since 1999.",
+  title: "About Us | ManaKart",
+  description: "Learn about ManaKart - your one-stop online marketplace for everything.",
 };
+
 export default function AboutPage() {
   return (
     <>
       <Header />
-      <section className="relative h-[60vh] min-h-[500px] overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1920"
-            alt="Craftsmanship"
-            fill
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-charcoal-900/60" />
-        </div>
-        <div className="relative h-full container-luxury flex items-center justify-center text-center">
-          <div className="max-w-2xl pt-20">
-            <p className="overline text-gold-400 mb-4">Our Story</p>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-white mb-6">
-              The Art of Timeless Elegance
+      <main className="min-h-screen bg-[#f1f3f6] pt-4">
+        <div className="max-w-[900px] mx-auto px-4 pb-8">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 md:p-10">
+            <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+              About ManaKart
             </h1>
-            <p className="text-cream-200 text-lg">
-              Since 1999, we&apos;ve been curating exceptional pieces for those who
-              appreciate the finer things in life.
-            </p>
-          </div>
-        </div>
-      </section>
-      <section className="section bg-cream-100">
-        <div className="container-narrow">
-          <div className="prose prose-lg mx-auto text-center">
-            <p className="text-charcoal-600 text-lg leading-relaxed mb-8">
-              Succession was born from a simple belief: that true style
-              transcends trends and seasons. Founded in Mumbai by a collective of
-              designers and artisans, we set out to create a destination for
-              those who seek clothing that tells a story.
-            </p>
-            <p className="text-charcoal-600 text-lg leading-relaxed mb-8">
-              Every piece in our collection is carefully selected or designed
-              with an unwavering commitment to quality, craftsmanship, and
-              timeless appeal. We work with the finest mills and ateliers around
-              the world to bring you garments that are meant to be treasured.
-            </p>
-            <p className="text-charcoal-600 text-lg leading-relaxed">
-              Our philosophy is rooted in the idea that elegance is not about
-              excess, but about restraint. It&apos;s about choosing pieces that
-              speak softly but carry weight. It&apos;s about investing in quality
-              over quantity, and in style that endures.
-            </p>
-          </div>
-        </div>
-      </section>
-      <section className="section bg-white">
-        <div className="container-luxury">
-          <div className="text-center mb-16">
-            <p className="overline text-gold-600 mb-4">Our Values</p>
-            <h2 className="font-display text-3xl md:text-4xl text-charcoal-900">
-              What We Stand For
+
+            <div className="space-y-4 text-sm text-gray-900 leading-relaxed">
+              <p>
+                ManaKart was built with a simple mission: to make online shopping
+                easy, affordable, and accessible for everyone. We connect buyers
+                with sellers across the country, offering everything from
+                electronics and fashion to home essentials and more.
+              </p>
+              <p>
+                With a focus on customer satisfaction, we ensure every purchase
+                is backed by secure payments, reliable shipping, and hassle-free
+                returns. Our platform is designed to help you find exactly what
+                you need at the best possible price.
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-8" />
+
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+              Why Shop with Us
             </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-10">
-            {[
-              {
-                title: "Exceptional Quality",
-                description:
-                  "We source only the finest materials and work with skilled artisans who share our commitment to excellence.",
-              },
-              {
-                title: "Timeless Design",
-                description:
-                  "Our collections are designed to transcend trends, offering pieces that remain relevant season after season.",
-              },
-              {
-                title: "Sustainable Practice",
-                description:
-                  "We believe in responsible fashion, creating pieces meant to last and minimizing our environmental footprint.",
-              },
-            ].map((value, index) => (
-              <div key={index} className="text-center">
-                <div className="w-16 h-16 rounded-full bg-gold-100 flex items-center justify-center mx-auto mb-6">
-                  <span className="font-display text-2xl text-gold-600">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+            <div className="grid sm:grid-cols-2 gap-6">
+              {[
+                {
+                  icon: ShoppingBag,
+                  title: "Huge Selection",
+                  description:
+                    "Browse millions of products across hundreds of categories from trusted sellers.",
+                },
+                {
+                  icon: Truck,
+                  title: "Fast Delivery",
+                  description:
+                    "Get your orders delivered quickly with our reliable logistics network across India.",
+                },
+                {
+                  icon: Shield,
+                  title: "Secure Payments",
+                  description:
+                    "Shop confidently with our secure payment gateway supporting cards, UPI, and net banking.",
+                },
+                {
+                  icon: Headphones,
+                  title: "24/7 Support",
+                  description:
+                    "Our dedicated customer support team is always here to help you with any questions.",
+                },
+              ].map((item, index) => (
+                <div key={index} className="flex gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-5 h-5 text-gray-900" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-display text-xl text-charcoal-900 mb-4">
-                  {value.title}
-                </h3>
-                <p className="text-charcoal-600">{value.description}</p>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-8" />
+
+            <div className="text-center">
+              <p className="text-sm text-gray-500 mb-4">
+                Discover great deals and new arrivals every day.
+              </p>
+              <Link
+                href="/"
+                className="inline-block px-6 py-2 text-sm bg-gray-900 rounded-lg text-white hover:bg-gray-800 transition-colors"
+              >
+                Start Shopping
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
-      <section className="section bg-charcoal-900">
-        <div className="container-narrow text-center">
-          <h2 className="font-display text-3xl md:text-4xl text-cream-100 mb-6">
-            Experience the Difference
-          </h2>
-          <p className="text-charcoal-300 text-lg mb-8">
-            Discover our curated collections and find pieces that speak to your
-            sense of style.
-          </p>
-          <Link
-            href="/collections"
-            className="btn-gold inline-flex items-center gap-2"
-          >
-            Explore Collections
-          </Link>
-        </div>
-      </section>
+      </main>
       <Footer />
     </>
   );

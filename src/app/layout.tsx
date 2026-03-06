@@ -1,85 +1,84 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
-    default: "Succession | Luxury Fashion House",
-    template: "%s | Succession",
+    default: "ManaKart | Online Shopping for Everything",
+    template: "%s | ManaKart",
   },
   description:
-    "Discover timeless elegance with our curated collection of luxury fashion. Handcrafted pieces for the discerning individual.",
+    "Shop millions of products at great prices. Electronics, fashion, home & kitchen, and more. Fast delivery and easy returns.",
   keywords: [
-    "luxury fashion",
-    "designer clothing",
-    "old money style",
-    "premium fashion",
-    "elegant outfits",
+    "online shopping",
+    "ecommerce",
+    "buy online",
+    "best deals",
+    "electronics",
+    "fashion",
+    "home kitchen",
   ],
-  authors: [{ name: "Succession" }],
+  authors: [{ name: "ManaKart" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Succession",
-    title: "Succession | Luxury Fashion House",
+    siteName: "ManaKart",
+    title: "ManaKart | Online Shopping for Everything",
     description:
-      "Discover timeless elegance with our curated collection of luxury fashion.",
+      "Shop millions of products at great prices. Fast delivery and easy returns.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Succession | Luxury Fashion House",
+    title: "ManaKart | Online Shopping for Everything",
     description:
-      "Discover timeless elegance with our curated collection of luxury fashion.",
+      "Shop millions of products at great prices. Fast delivery and easy returns.",
   },
   robots: {
     index: true,
     follow: true,
   },
 };
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-      </head>
-      <body className="overflow-x-hidden">
+    <html lang="en">
+      <body className={inter.className}>
         <Providers>
-          <div className="grain-overlay" aria-hidden="true" />
           {children}
           <Toaster
             position="bottom-right"
             toastOptions={{
-              duration: 4000,
+              duration: 3000,
               style: {
-                background: "#1A1A1A",
-                color: "#FAF6F0",
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.875rem",
-                padding: "16px 20px",
-                borderRadius: "8px",
-                boxShadow: "0 8px 32px -8px rgba(26, 26, 26, 0.2)",
+                background: "#232f3e",
+                color: "#FFFFFF",
+                fontSize: "13px",
+                padding: "10px 16px",
+                borderRadius: "10px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
               },
               success: {
                 iconTheme: {
-                  primary: "#C9A227",
-                  secondary: "#FAF6F0",
+                  primary: "#059669",
+                  secondary: "#fff",
                 },
               },
               error: {
                 iconTheme: {
-                  primary: "#722F37",
-                  secondary: "#FAF6F0",
+                  primary: "#DC2626",
+                  secondary: "#fff",
                 },
               },
             }}

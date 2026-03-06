@@ -1,6 +1,7 @@
-
 import { NextRequest } from 'next/server'
-import prisma from '@/lib/prisma'
+import { db } from '@/db'
+import { reviews } from '@/db/schema'
+import { eq, and, desc } from 'drizzle-orm'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 
@@ -11,32 +12,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const featured = searchParams.get('featured') !== 'false'
     const limit = parseInt(searchParams.get('limit') || '10')
-    const reviews = await prisma.review.findMany({
-      where: {
-        isApproved: true,
-        ...(featured && { isFeatured: true }),
-      },
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        userName: true,
-        rating: true,
-        comment: true,
-        media: true,
-        createdAt: true,
+
+    const conditions: any[] = [eq(reviews.isApproved, true)]
+    if (featured) conditions.push(eq(reviews.isFeatured, true))
+
+    const reviewRows = await db.query.reviews.findMany({
+      where: and(...conditions),
+      limit,
+      orderBy: [desc(reviews.createdAt)],
+      columns: {
+        id: true, userName: true, rating: true, comment: true, media: true, createdAt: true,
       },
     })
-    const allReviews = await prisma.review.findMany({
-      where: { isApproved: true },
-      select: { rating: true },
+
+    const allReviews = await db.query.reviews.findMany({
+      where: eq(reviews.isApproved, true),
+      columns: { rating: true },
     })
-    const averageRating =
-      allReviews.length > 0
-        ? allReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / allReviews.length
-        : 0
+
+    const averageRating = allReviews.length > 0
+      ? allReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / allReviews.length
+      : 0
+
     return successResponse({
-      reviews,
+      reviews: reviewRows,
       stats: {
         averageRating: Math.round(averageRating * 10) / 10,
         totalReviews: allReviews.length,
@@ -48,4 +47,3 @@ export async function GET(request: NextRequest) {
     return errorResponse('Something went wrong', 500)
   }
 }
-

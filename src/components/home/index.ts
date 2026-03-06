@@ -1,9 +1,5 @@
 export * from "./Hero";
-export * from "./FeaturedOutfits";
-export * from "./AboutPreview";
 export * from "./Reviews";
-export * from "./CategoryShowcase";
-export * from "./ReelsSection";
-export * from "./Newsletter";
-export { default as VideoIntro } from "./VideoIntro";
-export { default as HomeWrapper } from "./HomeWrapper";
+export * from "./DealOfTheDay";
+export * from "./ShopByCategory";
+export * from "./RecommendedProducts";

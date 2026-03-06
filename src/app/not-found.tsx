@@ -1,33 +1,38 @@
-"use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui";
-import { Home, ArrowLeft } from "lucide-react";
+
 export default function NotFound() {
-  const router = useRouter();
   return (
-    <div className="min-h-screen bg-cream-100 flex items-center justify-center px-6">
-      <div className="text-center max-w-md">
-        <p className="font-display text-8xl text-charcoal-200 mb-4">404</p>
-        <h1 className="font-display text-2xl text-charcoal-900 mb-4">
-          This Page is No Longer Available
-        </h1>
-        <p className="text-charcoal-600 mb-8">
-          This page is no longer available, but we can help you find what you&apos;re seeking.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/">
-            <Button variant="primary" leftIcon={<Home className="w-4 h-4" />}>
-              Return Home
-            </Button>
-          </Link>
-          <Button
-            variant="secondary"
-            leftIcon={<ArrowLeft className="w-4 h-4" />}
-            onClick={() => router.back()}
+    <div className="min-h-screen bg-[#f1f3f6] flex items-center justify-center px-4">
+      <div className="max-w-[600px] w-full">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 text-center">
+          <h1 className="text-xl font-semibold text-gray-900 mb-3">
+            Looking for something?
+          </h1>
+          <p className="text-sm text-gray-500 mb-2">
+            We&apos;re sorry, the page you requested could not be found.
+            Please check the URL or go back to our homepage.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            If you entered a web address, please check it was entered correctly.
+          </p>
+          <Link
+            href="/"
+            className="inline-block px-6 py-2 text-sm bg-gray-900 rounded-lg text-white hover:bg-gray-800 transition-colors"
           >
-            Previous Page
-          </Button>
+            Go to ManaKart&apos;s Home Page
+          </Link>
+          <div className="border-t border-gray-200 mt-6 pt-4">
+            <p className="text-xs text-gray-500">
+              Need help?{" "}
+              <Link href="/help" className="text-green-600 hover:text-green-700 hover:underline">
+                Visit our Help Center
+              </Link>
+              {" "}or{" "}
+              <Link href="/contact" className="text-green-600 hover:text-green-700 hover:underline">
+                Contact Us
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

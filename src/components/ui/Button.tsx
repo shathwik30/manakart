@@ -1,16 +1,14 @@
 "use client";
-import { forwardRef, useState } from "react";
-import { motion } from "framer-motion";
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "gold" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "accent" | "danger";
   size?: "sm" | "md" | "lg" | "xl";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
-  magnetic?: boolean;
 }
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -23,146 +21,71 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       rightIcon,
       fullWidth = false,
       disabled,
-      magnetic = false,
       children,
       ...props
     },
     ref
   ) => {
-    const [isHovered, setIsHovered] = useState(false);
     const baseStyles = `
-      relative inline-flex items-center justify-center gap-2
-      font-sans font-medium tracking-wide
-      transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
+      inline-flex items-center justify-center gap-2
+      font-semibold text-sm
+      cursor-pointer transition-colors duration-150
       disabled:opacity-50 disabled:cursor-not-allowed
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-      overflow-hidden
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500
     `;
     const variants = {
       primary: `
-        bg-charcoal-900 text-cream-100
-        hover:bg-charcoal-800
-        active:scale-[0.98]
-        focus-visible:ring-charcoal-900 focus-visible:ring-offset-cream-100
+        bg-gray-900 text-white
+        hover:bg-gray-800
+        rounded-lg
       `,
       secondary: `
-        bg-transparent text-charcoal-900
-        border border-charcoal-900
-        hover:bg-charcoal-900 hover:text-cream-100
-        active:scale-[0.98]
-        focus-visible:ring-charcoal-900 focus-visible:ring-offset-cream-100
+        bg-white text-gray-900
+        border border-gray-300
+        hover:bg-gray-50 hover:border-gray-400
+        rounded-lg
       `,
       ghost: `
-        bg-transparent text-charcoal-700
-        hover:text-charcoal-900 hover:bg-charcoal-100
-        active:scale-[0.98]
-        focus-visible:ring-charcoal-500 focus-visible:ring-offset-cream-100
+        bg-transparent text-green-600
+        hover:text-green-700 hover:bg-green-50
+        rounded-lg
       `,
-      gold: `
-        bg-gold-500 text-white
-        hover:bg-gold-600
-        shadow-[0_0_20px_rgba(192,88,0,0.15)]
-        hover:shadow-[0_8px_24px_-4px_rgba(192,88,0,0.3)]
-        active:scale-[0.98]
-        focus-visible:ring-gold-500 focus-visible:ring-offset-cream-100
+      accent: `
+        bg-green-600 text-white
+        hover:bg-green-700
+        rounded-lg
       `,
       danger: `
-        bg-burgundy-500 text-white
-        hover:bg-burgundy-600
-        active:scale-[0.98]
-        focus-visible:ring-burgundy-500 focus-visible:ring-offset-cream-100
+        bg-red-600 text-white
+        hover:bg-red-700
+        rounded-lg
       `,
     };
     const sizes = {
-      sm: "px-4 py-2 text-sm rounded-md",
-      md: "px-6 py-3 text-sm rounded-lg",
-      lg: "px-8 py-4 text-base rounded-lg",
-      xl: "px-10 py-5 text-lg rounded-xl",
+      sm: "px-3 py-1.5 text-xs",
+      md: "px-4 py-2 text-sm",
+      lg: "px-6 py-2.5 text-sm",
+      xl: "px-8 py-3 text-base",
     };
-    const ButtonContent = (
-      <>
-        {isHovered && !disabled && !isLoading && (
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: "100%" }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-          />
-        )}
-        <span className="relative z-10 flex items-center justify-center gap-2">
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Please wait...</span>
-            </>
-          ) : (
-            <>
-              {leftIcon && (
-                <motion.span
-                  initial={false}
-                  animate={{ x: isHovered && !disabled ? -2 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex-shrink-0"
-                >
-                  {leftIcon}
-                </motion.span>
-              )}
-              {children}
-              {rightIcon && (
-                <motion.span
-                  initial={false}
-                  animate={{ x: isHovered && !disabled ? 2 : 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex-shrink-0"
-                >
-                  {rightIcon}
-                </motion.span>
-              )}
-            </>
-          )}
-        </span>
-      </>
-    );
-    if (magnetic && !disabled && !isLoading) {
-      const {
-        onDrag,
-        onDragStart,
-        onDragEnd,
-        onDragEnter,
-        onDragLeave,
-        onDragOver,
-        onDragExit,
-        onDrop,
-        onAnimationStart,
-        onAnimationEnd,
-        onAnimationIteration,
-        ...motionProps
-      } = props;
-      return (
-        <motion.button
-          ref={ref}
-          disabled={disabled || isLoading}
-          className={cn(baseStyles, variants[variant], sizes[size], fullWidth && "w-full", className)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          {...motionProps}
-        >
-          {ButtonContent}
-        </motion.button>
-      );
-    }
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(baseStyles, variants[variant], sizes[size], fullWidth && "w-full", className)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         {...props}
       >
-        {ButtonContent}
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Please wait...</span>
+          </>
+        ) : (
+          <>
+            {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+            {children}
+            {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+          </>
+        )}
       </button>
     );
   }

@@ -1,134 +1,200 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronRight, User, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { X, ChevronRight, User, Package, Settings, HelpCircle } from "lucide-react";
 import { useScrollLock } from "@/hooks";
 import { useAuthStore } from "@/store/useAuthStore";
-interface NavItem {
-  label: string;
-  href: string;
-  children?: { label: string; href: string }[];
-}
+import { useCategoryStore } from "@/store/useCategoryStore";
+
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  navigation: NavItem[];
 }
-export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const { isAuthenticated } = useAuthStore();
+
+export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const { navCategories } = useCategoryStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
   useScrollLock(isOpen);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
+    } else {
+      setIsAnimating(false);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const userName = user?.name || "Guest";
+
+  if (!isVisible) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+    <div className="lg:hidden">
+      {/* Backdrop overlay */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 z-[100] transition-opacity duration-300"
+        style={{
+          backgroundColor: "rgba(0,0,0,0.4)",
+          opacity: isAnimating ? 1 : 0,
+        }}
+      />
+
+      {/* Slide-in panel */}
+      <div
+        className="fixed top-0 left-0 bottom-0 z-[101] w-full max-w-[340px] flex flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out"
+        style={{
+          transform: isAnimating ? "translateX(0)" : "translateX(-100%)",
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 bg-[#232f3e]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[#3a4553]">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-base font-semibold text-white">
+              Hello, {isAuthenticated ? userName : "Sign in"}
+            </span>
+          </div>
+          <button
             onClick={onClose}
-            className="fixed inset-0 z-[100] bg-charcoal-900/60 backdrop-blur-sm lg:hidden"
-          />
-          {}
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-0 left-0 bottom-0 z-[101] w-full max-w-sm bg-cream-100 shadow-elegant lg:hidden"
+            className="p-1.5 text-gray-300 hover:text-white hover:bg-[#3a4553] rounded-lg transition-colors"
+            aria-label="Close menu"
           >
-            {}
-            <div className="flex items-center justify-between p-6 border-b border-charcoal-100">
-              <h2 className="font-display text-xl text-charcoal-900">Menu</h2>
-              <button
-                onClick={onClose}
-                className="p-2 -m-2 text-charcoal-400 hover:text-charcoal-600 transition-colors"
-                aria-label="Close menu"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            {}
-            <nav className="flex-1 overflow-y-auto py-4">
-              {navigation.map((item) => (
-                <div key={item.label} className="border-b border-charcoal-100">
-                  {item.children ? (
-                    <>
-                      <button
-                        onClick={() =>
-                          setExpandedItem(
-                            expandedItem === item.label ? null : item.label
-                          )
-                        }
-                        className="flex items-center justify-between w-full px-6 py-4 text-left"
-                      >
-                        <span className="text-lg font-medium text-charcoal-900">
-                          {item.label}
-                        </span>
-                        <ChevronRight
-                          className={cn(
-                            "w-5 h-5 text-charcoal-400 transition-transform duration-200",
-                            expandedItem === item.label && "rotate-90"
-                          )}
-                        />
-                      </button>
-                      <AnimatePresence>
-                        {expandedItem === item.label && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden bg-cream-200/50"
-                          >
-                            {item.children.map((child) => (
-                              <Link
-                                key={child.label}
-                                href={child.href}
-                                onClick={onClose}
-                                className="block px-10 py-3 text-charcoal-700 hover:text-charcoal-900 transition-colors"
-                              >
-                                {child.label}
-                              </Link>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      onClick={onClose}
-                      className="block px-6 py-4 text-lg font-medium text-charcoal-900 hover:bg-cream-200/50 transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </nav>
-            {}
-            <div className="p-6 border-t border-charcoal-100 space-y-3">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <nav className="flex-1 overflow-y-auto">
+          {/* Shop by Category section */}
+          <div className="border-b border-gray-100">
+            <h3 className="px-5 pt-5 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Shop By Category
+            </h3>
+            {navCategories.map((cat) => (
               <Link
-                href={isAuthenticated ? "/account" : "/login"}
+                key={cat.id}
+                href={`/category/${cat.slug}`}
                 onClick={onClose}
-                className="flex items-center gap-3 w-full px-4 py-3 text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/50 rounded-lg transition-colors"
+                className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
               >
-                <User className="w-5 h-5" />
-                <span>{isAuthenticated ? "My Account" : "Sign In"}</span>
+                <span className="text-sm text-gray-900">{cat.name}</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
               </Link>
-              <button className="flex items-center gap-3 w-full px-4 py-3 text-charcoal-700 hover:text-charcoal-900 hover:bg-cream-200/50 rounded-lg transition-colors">
-                <Search className="w-5 h-5" />
-                <span>Search</span>
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+            ))}
+            <Link
+              href="/products"
+              onClick={onClose}
+              className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-sm font-medium text-green-600">
+                See All Products
+              </span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </Link>
+          </div>
+
+          {/* Deals section */}
+          <div className="border-b border-gray-100">
+            <h3 className="px-5 pt-5 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Trending
+            </h3>
+            <Link
+              href="/search?deals=true"
+              onClick={onClose}
+              className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-sm text-gray-900">
+                Today&apos;s Deals
+              </span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </Link>
+          </div>
+
+          {/* Help & Settings section */}
+          <div className="border-b border-gray-100">
+            <h3 className="px-5 pt-5 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Help & Settings
+            </h3>
+
+            <Link
+              href={isAuthenticated ? "/account" : "/login"}
+              onClick={onClose}
+              className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <User className="w-5 h-5 text-gray-400" />
+              <span className="text-sm text-gray-900">
+                {isAuthenticated ? "Your Account" : "Sign In"}
+              </span>
+            </Link>
+
+            {isAuthenticated && (
+              <Link
+                href="/account/orders"
+                onClick={onClose}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+              >
+                <Package className="w-5 h-5 text-gray-400" />
+                <span className="text-sm text-gray-900">Your Orders</span>
+              </Link>
+            )}
+
+            {isAuthenticated && (
+              <Link
+                href="/account/addresses"
+                onClick={onClose}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+              >
+                <Settings className="w-5 h-5 text-gray-400" />
+                <span className="text-sm text-gray-900">Addresses</span>
+              </Link>
+            )}
+
+            <Link
+              href="/help"
+              onClick={onClose}
+              className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <HelpCircle className="w-5 h-5 text-gray-400" />
+              <span className="text-sm text-gray-900">Help</span>
+            </Link>
+          </div>
+
+          {/* About links */}
+          <div className="pb-4">
+            <Link
+              href="/about"
+              onClick={onClose}
+              className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-sm text-gray-900">About ManaKart</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </Link>
+            <Link
+              href="/contact"
+              onClick={onClose}
+              className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-sm text-gray-900">Contact Us</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </Link>
+          </div>
+        </nav>
+      </div>
+    </div>
   );
 }

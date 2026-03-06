@@ -1,50 +1,52 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Header, Footer } from "@/components/layout";
-import { AccountSidebar } from "@/components/account/AccountSidebar";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { AccountNavigation } from "@/components/account/AccountSidebar";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2 } from "lucide-react";
+
 export default function AccountLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login?redirect=/account");
     }
   }, [isLoading, isAuthenticated, router]);
+
   if (isLoading) {
     return (
       <>
         <Header />
-        <main className="min-h-screen pt-32 pb-20 bg-cream-100">
-          <div className="container-luxury flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-charcoal-400" />
+        <main className="min-h-screen bg-[#f1f3f6]">
+          <div className="max-w-5xl mx-auto px-4 py-8 flex items-center justify-center min-h-[400px]">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
           </div>
         </main>
         <Footer />
       </>
     );
   }
+
   if (!isAuthenticated) {
     return null;
   }
+
   return (
     <>
       <Header />
-      <main className="min-h-screen pt-32 pb-20 bg-cream-100">
-        <div className="container-luxury">
-          <div className="grid lg:grid-cols-4 gap-10 lg:gap-12">
-            {}
-            <div className="lg:col-span-1">
-              <AccountSidebar user={user} />
-            </div>
-            {}
-            <div className="lg:col-span-3">{children}</div>
+      <main className="min-h-screen bg-[#f1f3f6]">
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          <AccountNavigation />
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+            {children}
           </div>
         </div>
       </main>

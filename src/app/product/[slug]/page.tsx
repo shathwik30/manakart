@@ -1,7 +1,8 @@
 
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Header, Footer } from "@/components/layout";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { ProductDetail } from "@/components/products/ProductDetail";
 import { productService } from "@/lib/services/product-service";
 
@@ -14,10 +15,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const { product } = await productService.getProductBySlug(slug);
     if (!product) return { title: "Product Not Found" };
-    
+
     return {
-      title: product.title,
-      description: product.description || `Shop ${product.title} at Succession`,
+      title: `${product.title} | ManaKart`,
+      description: product.description || `Buy ${product.title} at great prices on ManaKart`,
     };
   } catch {
     return { title: "Product Not Found" };
@@ -39,7 +40,9 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <>
       <Header />
-      <ProductDetail product={product} />
+      <main className="bg-white min-h-screen">
+        <ProductDetail product={product} />
+      </main>
       <Footer />
     </>
   );

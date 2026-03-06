@@ -1,7 +1,6 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollLock } from "@/hooks";
@@ -25,7 +24,11 @@ export function Drawer({
   showCloseButton = true,
   className,
 }: DrawerProps) {
+  const [mounted, setMounted] = useState(false);
   useScrollLock(isOpen);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -41,69 +44,44 @@ export function Drawer({
     lg: "max-w-md",
     xl: "max-w-lg",
   };
-  const slideVariants = {
-    left: {
-      initial: { x: "-100%" },
-      animate: { x: 0 },
-      exit: { x: "-100%" },
-    },
-    right: {
-      initial: { x: "100%" },
-      animate: { x: 0 },
-      exit: { x: "100%" },
-    },
-  };
-  if (typeof window === "undefined") return null;
+  if (!mounted || !isOpen) return null;
   return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex">
-          {}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-charcoal-900/60 backdrop-blur-sm"
-          />
-          {}
-          <motion.div
-            initial={slideVariants[side].initial}
-            animate={slideVariants[side].animate}
-            exit={slideVariants[side].exit}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className={cn(
-              "relative w-full h-full bg-white shadow-elegant flex flex-col",
-              sizes[size],
-              side === "right" && "ml-auto",
-              className
+    <div className="fixed inset-0 z-[100] flex">
+      <div
+        onClick={onClose}
+        className="absolute inset-0 bg-black/40"
+      />
+      <div
+        className={cn(
+          "relative w-full h-full bg-white shadow-xl flex flex-col",
+          sizes[size],
+          side === "right" && "ml-auto",
+          className
+        )}
+        style={{
+          transition: "transform 0.2s ease-out",
+        }}
+      >
+        {(title || showCloseButton) && (
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            {title && (
+              <h2 className="text-base font-semibold text-gray-900">
+                {title}
+              </h2>
             )}
-          >
-            {}
-            {(title || showCloseButton) && (
-              <div className="flex items-center justify-between p-6 border-b border-charcoal-100">
-                {title && (
-                  <h2 className="text-lg font-display font-medium text-charcoal-900">
-                    {title}
-                  </h2>
-                )}
-                {showCloseButton && (
-                  <button
-                    onClick={onClose}
-                    className="p-2 -m-2 text-charcoal-400 hover:text-charcoal-600 transition-colors rounded-full hover:bg-charcoal-100"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             )}
-            {}
-            <div className="flex-1 overflow-y-auto">{children}</div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>,
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto">{children}</div>
+      </div>
+    </div>,
     document.body
   );
 }

@@ -10,11 +10,11 @@ export function errorResponse(message: string, status = 400) {
 export function generateOrderNumber(): string {
   const date = new Date();
   const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const random = crypto.randomUUID().slice(0, 6).toUpperCase();
   return `ORD-${dateStr}-${random}`;
 }
 export function generateSessionId(): string {
-  return `sess_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+  return `sess_${Date.now()}_${crypto.randomUUID()}`;
 }
 export function slugify(text: string): string {
   return text
@@ -118,7 +118,7 @@ export function formatDate(date: Date | string): string {
   });
 }
 export function generateId(): string {
-  return Math.random().toString(36).substring(2, 15);
+  return crypto.randomUUID();
 }
 export const isClient = typeof window !== "undefined";
 export const isServer = typeof window === "undefined";
@@ -127,6 +127,49 @@ export function toHttps(url: string | null | undefined): string {
   if (!url) return "";
   return url.replace(/^http:\/\//i, "https://");
 }
+export function calculateSavings(basePrice: number, comparePrice: number): number {
+  if (comparePrice <= 0 || basePrice >= comparePrice) return 0;
+  return comparePrice - basePrice;
+}
+
+export function formatCountdown(endsAt: Date | string): string {
+  const end = new Date(endsAt).getTime();
+  const now = Date.now();
+  const diff = end - now;
+  if (diff <= 0) return "Expired";
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h`;
+  }
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+export interface BreadcrumbItem {
+  label: string;
+  href: string;
+}
+
+export function buildBreadcrumbs(
+  category: { name: string; slug: string; parent?: { name: string; slug: string } | null } | null
+): BreadcrumbItem[] {
+  const crumbs: BreadcrumbItem[] = [{ label: "Home", href: "/" }];
+  if (!category) return crumbs;
+  if (category.parent) {
+    crumbs.push({
+      label: category.parent.name,
+      href: `/category/${category.parent.slug}`,
+    });
+  }
+  crumbs.push({
+    label: category.name,
+    href: `/category/${category.slug}`,
+  });
+  return crumbs;
+}
+
 export const storage = {
   get: <T>(key: string, defaultValue: T): T => {
     if (isServer) return defaultValue;

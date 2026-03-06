@@ -1,13 +1,14 @@
-
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { heroContents, reviews, deals, homepageSections } from "@/db/schema";
+import { eq, and, lte, gt, desc, asc } from "drizzle-orm";
 import { toHttps } from "@/lib/utils";
 
 export const landingService = {
   async getHeroContent() {
-    const heroContent = await prisma.heroContent.findMany({
-      where: { isActive: true },
-      orderBy: { position: "asc" },
-      select: {
+    const result = await db.query.heroContents.findMany({
+      where: eq(heroContents.isActive, true),
+      orderBy: [asc(heroContents.position)],
+      columns: {
         id: true,
         title: true,
         subtitle: true,
@@ -20,50 +21,55 @@ export const landingService = {
       },
     });
     return {
-      heroContent: heroContent.map(h => ({ ...h, image: toHttps(h.image) }))
+      heroContent: result.map((h) => ({ ...h, image: toHttps(h.image) })),
     };
   },
 
   async getReviews(options: { featured?: boolean; limit?: number } = {}) {
     const { featured = false, limit = 10 } = options;
-    
-    const dbReviews = await prisma.review.findMany({
-      where: {
-        isApproved: true,
-        ...(featured && { isFeatured: true }),
-      },
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      select: {
+
+    const conditions: any[] = [eq(reviews.isApproved, true)];
+    if (featured) conditions.push(eq(reviews.isFeatured, true));
+
+    const dbReviews = await db.query.reviews.findMany({
+      where: and(...conditions),
+      limit,
+      orderBy: [desc(reviews.createdAt)],
+      columns: {
         id: true,
+        productId: true,
+        userId: true,
         userName: true,
+        title: true,
         rating: true,
         comment: true,
         media: true,
+        adminReply: true,
+        isFeatured: true,
+        isApproved: true,
         createdAt: true,
       },
     });
 
-    // Transform to match Review interface
-    const reviews = dbReviews.map(r => ({
+    const reviewsMapped = dbReviews.map((r) => ({
       ...r,
       comment: r.comment || undefined,
-      media: r.media.map(toHttps),
+      media: (r.media || []).map(toHttps),
       createdAt: r.createdAt.toISOString(),
     }));
 
-    const allReviews = await prisma.review.findMany({
-      where: { isApproved: true },
-      select: { rating: true },
+    const allReviews = await db.query.reviews.findMany({
+      where: eq(reviews.isApproved, true),
+      columns: { rating: true },
     });
 
     const averageRating =
       allReviews.length > 0
-        ? allReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / allReviews.length
+        ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
         : 0;
 
     return {
-      reviews,
+      reviews: reviewsMapped,
       stats: {
         averageRating: Math.round(averageRating * 10) / 10,
         totalReviews: allReviews.length,
@@ -71,49 +77,43 @@ export const landingService = {
     };
   },
 
-  async getReels(limit: number = 20) {
-    const reels = await prisma.reel.findMany({
-      where: { isActive: true },
-      orderBy: { position: "asc" },
-      take: limit,
-      select: {
-        id: true,
-        videoUrl: true,
-        thumbnail: true,
-        title: true,
-        outfitId: true,
-        isActive: true, // Required
-        position: true, // Required
-        createdAt: true, // Required
+  async getActiveDeals() {
+    const now = new Date();
+    const result = await db.query.deals.findMany({
+      where: and(
+        eq(deals.isActive, true),
+        lte(deals.startsAt, now),
+        gt(deals.endsAt, now)
+      ),
+      orderBy: [asc(deals.position)],
+      limit: 10,
+      with: {
+        product: {
+          with: {
+            category: { columns: { id: true, name: true, slug: true } },
+            brand: { columns: { id: true, name: true, slug: true } },
+          },
+        },
       },
     });
 
-    const outfitIds = reels
-      .filter((reel) => reel.outfitId)
-      .map((reel) => reel.outfitId as string);
+    return {
+      deals: result.map((d) => ({
+        ...d,
+        product: {
+          ...d.product,
+          images: (d.product.images || []).map(toHttps),
+        },
+      })),
+    };
+  },
 
-    const outfits =
-      outfitIds.length > 0
-        ? await prisma.outfit.findMany({
-            where: { id: { in: outfitIds } },
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              bundlePrice: true,
-            },
-          })
-        : [];
+  async getHomepageSections() {
+    const sections = await db.query.homepageSections.findMany({
+      where: eq(homepageSections.isActive, true),
+      orderBy: [asc(homepageSections.position)],
+    });
 
-    const outfitMap = new Map(outfits.map((o) => [o.id, o]));
-
-    const reelsWithOutfits = reels.map((reel) => ({
-      ...reel,
-      videoUrl: toHttps(reel.videoUrl),
-      thumbnail: reel.thumbnail ? toHttps(reel.thumbnail) : null,
-      outfit: reel.outfitId ? outfitMap.get(reel.outfitId) || undefined : undefined,
-    }));
-
-    return { reels: reelsWithOutfits };
+    return { sections };
   },
 };

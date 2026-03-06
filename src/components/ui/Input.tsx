@@ -1,6 +1,5 @@
 "use client";
 import { forwardRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -9,7 +8,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  variant?: "default" | "luxury";
+  variant?: "default" | "outline";
 }
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
@@ -28,128 +27,78 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
     const isPassword = type === "password";
     const baseStyles = `
-      w-full transition-all duration-300
-      placeholder:text-charcoal-400
+      w-full text-sm text-gray-900
+      placeholder:text-gray-400
       disabled:opacity-50 disabled:cursor-not-allowed
-      focus:outline-none
+      focus:outline-none transition-all duration-150
     `;
     const variants = {
       default: `
-        px-4 py-3 bg-white
-        border border-charcoal-200 rounded-lg
-        text-charcoal-900
-        focus:border-gold-500 focus:ring-2 focus:ring-gold-500/10
-        ${error ? "border-burgundy-500 focus:border-burgundy-500 focus:ring-burgundy-500/10" : ""}
+        px-3 py-2.5 bg-white
+        border border-gray-300 rounded-lg
+        focus:border-green-500 focus:ring-2 focus:ring-green-500/20
+        ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500/20" : ""}
       `,
-      luxury: `
-        px-5 py-4 bg-cream-50
-        border-0 border-b-2 border-charcoal-200
-        text-charcoal-900 rounded-none
-        focus:bg-white focus:border-gold-500
-        ${error ? "border-burgundy-500 focus:border-burgundy-500" : ""}
+      outline: `
+        px-3 py-2.5 bg-white
+        border-0 border-b-2 border-gray-200
+        rounded-none
+        focus:border-green-500
+        ${error ? "border-red-500 focus:border-red-500" : ""}
       `,
     };
     return (
       <div className="w-full">
         {label && (
-          <motion.label
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn(
-              "block mb-2 text-sm font-medium transition-colors duration-200",
-              isFocused ? "text-gold-600" : "text-charcoal-700"
-            )}
-          >
+          <label className="block mb-1.5 text-sm font-medium text-gray-900">
             {label}
-          </motion.label>
+          </label>
         )}
-        <motion.div
-          className="relative"
-          animate={{
-            scale: isFocused ? 1.01 : 1,
-          }}
-          transition={{ duration: 0.2 }}
-        >
+        <div className="relative">
           {leftIcon && (
-            <motion.div
-              className="absolute left-4 top-1/2 -translate-y-1/2"
-              animate={{
-                color: isFocused ? "rgb(192, 88, 0)" : "rgb(156, 146, 124)",
-              }}
-              transition={{ duration: 0.2 }}
-            >
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               {leftIcon}
-            </motion.div>
+            </div>
           )}
           <input
             ref={ref}
             type={isPassword && showPassword ? "text" : type}
             disabled={disabled}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
             className={cn(
               baseStyles,
               variants[variant],
-              leftIcon && "pl-12",
-              (rightIcon || isPassword) && "pr-12",
+              leftIcon && "pl-10",
+              (rightIcon || isPassword) && "pr-10",
               className
             )}
             {...props}
           />
-          {/* Focus indicator line for luxury variant */}
-          {variant === "luxury" && (
-            <motion.div
-              className="absolute bottom-0 left-0 h-0.5 bg-gold-500"
-              initial={{ width: 0 }}
-              animate={{ width: isFocused ? "100%" : 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            />
-          )}
           {isPassword && (
-            <motion.button
+            <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-gold-600 transition-colors"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               {showPassword ? (
-                <EyeOff className="w-5 h-5" />
+                <EyeOff className="w-4 h-4" />
               ) : (
-                <Eye className="w-5 h-5" />
+                <Eye className="w-4 h-4" />
               )}
-            </motion.button>
+            </button>
           )}
           {rightIcon && !isPassword && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-400">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
               {rightIcon}
             </div>
           )}
-        </motion.div>
-        <AnimatePresence mode="wait">
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, height: 0, y: -10 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-2 text-sm text-burgundy-500"
-            >
-              {error}
-            </motion.p>
-          )}
-        </AnimatePresence>
+        </div>
+        {error && (
+          <p className="mt-1 text-xs text-red-600">{error}</p>
+        )}
         {hint && !error && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-2 text-sm text-charcoal-500"
-          >
-            {hint}
-          </motion.p>
+          <p className="mt-1 text-xs text-gray-500">{hint}</p>
         )}
       </div>
     );

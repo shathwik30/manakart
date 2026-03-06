@@ -46,21 +46,21 @@ export default function AdminOrders() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-serif text-charcoal-900 mb-2">Orders</h1>
-          <p className="text-charcoal-500 text-sm">Manage customer orders</p>
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Orders</h1>
+          <p className="text-gray-500 text-sm">Manage customer orders</p>
         </div>
       </div>
-      <div className="bg-white rounded-lg shadow-sm border border-charcoal-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {}
-        <div className="p-4 border-b border-charcoal-200 flex gap-4 overflow-x-auto">
+        <div className="p-4 border-b border-gray-200 flex gap-4 overflow-x-auto">
            {["ALL", "CREATED", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"].map((status) => (
                <button
                   key={status}
                   onClick={() => { setStatusFilter(status); setPage(1); }}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-colors whitespace-nowrap ${
                       statusFilter === status 
-                        ? "bg-charcoal-900 text-cream-100" 
-                        : "bg-cream-50 text-charcoal-600 hover:bg-charcoal-200"
+                        ? "bg-gray-900 text-gray-50" 
+                        : "bg-white text-gray-600 hover:bg-gray-200"
                   }`}
                >
                    {status.charAt(0) + status.slice(1).toLowerCase().replace('_', ' ')}
@@ -70,7 +70,7 @@ export default function AdminOrders() {
         {}
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cream-100 text-charcoal-600 text-xs uppercase tracking-wider font-medium">
+            <thead className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider font-medium">
               <tr>
                 <th className="px-6 py-4 text-left">Order ID</th>
                 <th className="px-6 py-4 text-left">Date</th>
@@ -80,10 +80,10 @@ export default function AdminOrders() {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-charcoal-200">
+            <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-charcoal-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     <div className="flex justify-center items-center gap-2">
                        <Loader2 className="animate-spin" size={20} />
                        <span>Loading orders...</span>
@@ -92,23 +92,23 @@ export default function AdminOrders() {
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-charcoal-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     No orders found.
                   </td>
                 </tr>
               ) : (
                 orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-cream-50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-sm text-charcoal-600">
+                  <tr key={order.id} className="hover:bg-white transition-colors">
+                    <td className="px-6 py-4 font-mono text-sm text-gray-600">
                        #{order.orderNumber}
                     </td>
-                    <td className="px-6 py-4 text-sm text-charcoal-600">
+                    <td className="px-6 py-4 text-sm text-gray-600">
                        {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-charcoal-900 font-medium">
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
                        {order.items.length} items
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-charcoal-900">
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
                        {formatPrice(order.total)}
                     </td>
                     <td className="px-6 py-4">
@@ -121,7 +121,7 @@ export default function AdminOrders() {
                     <td className="px-6 py-4 text-right">
                        <Link
                           href={`/admin/orders/${order.id}`}
-                          className="flex items-center justify-end gap-1 text-gold-500 hover:underline text-sm font-medium"
+                          className="flex items-center justify-end gap-1 text-green-600 hover:text-green-700 hover:underline text-sm font-medium"
                        >
                           View Details <ArrowRight size={14} />
                        </Link>
@@ -133,22 +133,22 @@ export default function AdminOrders() {
           </table>
         </div>
          {}
-         <div className="px-6 py-4 border-t border-charcoal-200 flex items-center justify-between">
-            <span className="text-sm text-charcoal-400">
+         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <span className="text-sm text-gray-400">
                 Showing {orders.length > 0 ? (page - 1) * 10 + 1 : 0} to {Math.min(page * 10, totalCount)} of {totalCount} results
             </span>
             <div className="flex gap-2">
                 <button
                     disabled={page === 1}
                     onClick={() => setPage(page - 1)}
-                    className="px-3 py-1 text-sm border border-charcoal-200 rounded hover:bg-cream-50 disabled:opacity-50"
+                    className="px-3 py-1 text-sm border border-gray-200 rounded hover:bg-white disabled:opacity-50"
                 >
                     Previous
                 </button>
                 <button
                     disabled={page * 10 >= totalCount}
                     onClick={() => setPage(page + 1)}
-                    className="px-3 py-1 text-sm border border-charcoal-200 rounded hover:bg-cream-50 disabled:opacity-50"
+                    className="px-3 py-1 text-sm border border-gray-200 rounded hover:bg-white disabled:opacity-50"
                 >
                     Next
                 </button>

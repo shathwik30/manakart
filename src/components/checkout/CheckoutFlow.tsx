@@ -1,46 +1,42 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  ShoppingBag,
-  MapPin,
-  CreditCard,
+  ShoppingCart,
   Check,
-  ChevronRight,
-  Tag,
-  X,
-  Truck,
   Lock,
-  User as UserIcon,
-  Smartphone,
-  Mail,
-  ArrowRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
-import { Button, Input, Divider, Badge } from "@/components/ui";
+import { Input } from "@/components/ui";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { checkoutApi, accountApi, authApi, AddressInput, Address } from "@/lib/api";
 import toast from "react-hot-toast";
-type Step = "auth" | "address" | "payment";
+
+type Step = "auth" | "address" | "payment" | "review";
+
 declare global {
   interface Window {
     Razorpay: any;
   }
 }
+
 export function CheckoutFlow() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { items, subtotal, itemCount, fetchCart, cartId } = useCartStore();
   const { user, isAuthenticated, checkAuth } = useAuthStore();
+
   const [step, setStep] = useState<Step>("auth");
   const [isLoading, setIsLoading] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+
   const [authForm, setAuthForm] = useState({
     name: "",
     email: "",
@@ -49,6 +45,7 @@ export function CheckoutFlow() {
   });
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
+
   const [address, setAddress] = useState<AddressInput>({
     name: user?.name || "",
     email: user?.email || "",
@@ -58,12 +55,15 @@ export function CheckoutFlow() {
     state: "",
     pincode: "",
   });
+
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     discount: number;
   } | null>(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+  // Determine initial step based on auth status
   useEffect(() => {
     if (isAuthenticated) {
       if (step === "auth") setStep("address");
@@ -71,17 +71,24 @@ export function CheckoutFlow() {
       setStep("auth");
     }
   }, [isAuthenticated]);
+
+  // Fetch saved addresses when authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      accountApi.getAddresses().then((data) => {
-        setSavedAddresses(data.addresses);
-        const defaultAddr = data.addresses.find((a) => a.isDefault);
-        if (defaultAddr) {
-          setSelectedAddressId(defaultAddr.id);
-        }
-      }).catch(() => {});
+      accountApi
+        .getAddresses()
+        .then((data) => {
+          setSavedAddresses(data.addresses);
+          const defaultAddr = data.addresses.find((a) => a.isDefault);
+          if (defaultAddr) {
+            setSelectedAddressId(defaultAddr.id);
+          }
+        })
+        .catch(() => {});
     }
   }, [isAuthenticated]);
+
+  // Pre-fill address form with user data
   useEffect(() => {
     if (user) {
       setAddress((prev) => ({
@@ -92,15 +99,16 @@ export function CheckoutFlow() {
       }));
     }
   }, [user]);
+
+  // OTP countdown timer
   useEffect(() => {
     if (otpTimer > 0) {
       const timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [otpTimer]);
-  const deliveryCharge = 0; 
-  const discount = appliedCoupon?.discount || 0;
-  const total = subtotal - discount;
+
+  // Load Razorpay script
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -110,29 +118,16 @@ export function CheckoutFlow() {
       document.body.removeChild(script);
     };
   }, []);
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    setIsApplyingCoupon(true);
-    try {
-      const { discount, coupon } = await checkoutApi.applyCoupon(
-        couponCode.trim().toUpperCase(),
-        subtotal
-      );
-      setAppliedCoupon({ code: coupon.code, discount });
-      toast.success(`Coupon applied! You save ${formatPrice(discount)}`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Invalid coupon");
-    } finally {
-      setIsApplyingCoupon(false);
-    }
-  };
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponCode("");
-  };
+
+  const deliveryCharge = 0;
+  const discount = appliedCoupon?.discount || 0;
+  const total = subtotal - discount;
+
+  // --- Auth handlers ---
+
   const handleSendOtp = async () => {
     if (!authForm.email || !authForm.email.includes("@")) {
-      toast.error("Kindly enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
     if (!authForm.name) {
@@ -150,11 +145,14 @@ export function CheckoutFlow() {
       setOtpTimer(60);
       toast.success("Verification code sent to your email");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to send verification code");
+      toast.error(
+        error instanceof Error ? error.message : "Unable to send verification code"
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
   const handleVerifyOtp = async () => {
     if (!authForm.otp || authForm.otp.length !== 6) {
       toast.error("Please enter your six-digit verification code");
@@ -171,11 +169,11 @@ export function CheckoutFlow() {
       await checkAuth();
       toast.success("Verification complete");
       setStep("address");
-      setAddress(prev => ({
+      setAddress((prev) => ({
         ...prev,
         name: authForm.name,
         email: authForm.email,
-        phone: authForm.phone
+        phone: authForm.phone,
       }));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Invalid OTP");
@@ -183,6 +181,9 @@ export function CheckoutFlow() {
       setIsLoading(false);
     }
   };
+
+  // --- Address helpers ---
+
   const getSelectedAddress = (): AddressInput | null => {
     if (selectedAddressId && !showNewAddressForm) {
       const saved = savedAddresses.find((a) => a.id === selectedAddressId);
@@ -200,18 +201,25 @@ export function CheckoutFlow() {
     }
     return address;
   };
+
   const validateAddress = (): boolean => {
     const addr = getSelectedAddress();
     if (!addr) return false;
-    if (!addr.name || !addr.email || !addr.phone || !addr.street || !addr.city || !addr.state || !addr.pincode) {
+    if (
+      !addr.name ||
+      !addr.email ||
+      !addr.phone ||
+      !addr.street ||
+      !addr.city ||
+      !addr.state ||
+      !addr.pincode
+    ) {
       toast.error("Complete all address details");
       return false;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr.email)) {
-      toast.error("Kindly enter a valid email address");
+      toast.error("Please enter a valid email address");
       return false;
-    }
-    if (!/^[0-9]\d{9}$/.test(addr.phone.replace(/\D/g, ""))) {
     }
     if (!/^\d{6}$/.test(addr.pincode)) {
       toast.error("Please provide a valid six-digit pincode");
@@ -219,17 +227,49 @@ export function CheckoutFlow() {
     }
     return true;
   };
-  const handleProceedToPayment = async () => {
+
+  const handleProceedToPayment = () => {
     if (!validateAddress()) return;
     setStep("payment");
   };
+
+  const handleProceedToReview = () => {
+    setStep("review");
+  };
+
+  // --- Coupon handlers ---
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsApplyingCoupon(true);
+    try {
+      const { discount: disc, coupon } = await checkoutApi.applyCoupon(
+        couponCode.trim().toUpperCase(),
+        subtotal
+      );
+      setAppliedCoupon({ code: coupon.code, discount: disc });
+      toast.success(`Coupon applied! You save ${formatPrice(disc)}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Invalid coupon");
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+  };
+
+  // --- Payment handler ---
+
   const handlePayment = async () => {
     const addr = getSelectedAddress();
     if (!addr) return;
     setIsLoading(true);
     try {
       const paymentData = await checkoutApi.createPayment({
-        cartId: cartId!, 
+        cartId: cartId!,
         address: addr,
         couponCode: appliedCoupon?.code,
         subtotal,
@@ -241,7 +281,7 @@ export function CheckoutFlow() {
         key: paymentData.razorpayKeyId,
         amount: paymentData.amount,
         currency: paymentData.currency,
-        name: "Succession",
+        name: "ManaKart",
         description: `Order ${paymentData.orderNumber}`,
         order_id: paymentData.razorpayOrderId,
         handler: async (response: {
@@ -257,9 +297,9 @@ export function CheckoutFlow() {
               checkoutData: paymentData.checkoutData,
             });
             toast.success("Order placed successfully!");
-            fetchCart(); 
+            fetchCart();
             router.push(`/order-success?orderId=${result.order.id}`);
-          } catch (error) {
+          } catch {
             toast.error("Payment verification failed");
           }
         },
@@ -269,7 +309,7 @@ export function CheckoutFlow() {
           contact: addr.phone,
         },
         theme: {
-          color: "#1A1A1A",
+          color: "#388e3c",
         },
         modal: {
           ondismiss: () => {
@@ -284,547 +324,637 @@ export function CheckoutFlow() {
       setIsLoading(false);
     }
   };
+
+  // --- Helper: check if a step is complete ---
+
+  const isStepComplete = (s: Step): boolean => {
+    const order: Step[] = ["auth", "address", "payment", "review"];
+    return order.indexOf(s) < order.indexOf(step);
+  };
+
+  const selectedAddr = getSelectedAddress();
+
+  // --- Empty cart ---
+
   if (itemCount === 0) {
     return (
-      <div className="max-w-md mx-auto text-center py-20">
-        <div className="w-20 h-20 rounded-full bg-cream-200 flex items-center justify-center mx-auto mb-6">
-          <ShoppingBag className="w-10 h-10 text-charcoal-400" />
-        </div>
-        <h1 className="font-display text-2xl text-charcoal-900 mb-4">
-          Your Bag is Empty
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center max-w-lg mx-auto">
+        <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-200" />
+        <h1 className="text-2xl font-semibold mb-2 text-gray-900">
+          Your Cart is Empty
         </h1>
-        <p className="text-charcoal-600 mb-8">
-          Add some items to your bag to proceed with checkout.
+        <p className="text-sm mb-6 text-gray-500">
+          Add some items to your cart to proceed with checkout.
         </p>
-        <Link href="/collections">
-          <Button variant="primary" size="lg">
-            Shop Collections
-          </Button>
+        <Link
+          href="/products"
+          className="inline-block px-6 py-2.5 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+        >
+          Continue Shopping
         </Link>
       </div>
     );
   }
+
+  // --- Main checkout layout ---
+
   return (
-    <div className="grid lg:grid-cols-3 gap-10 lg:gap-16">
-      {}
-      <div className="lg:col-span-2">
-        {}
-        <div className="flex items-center gap-4 mb-10 overflow-x-auto pb-2">
-          <StepIndicator
-            step={1}
-            label="Account"
-            icon={<UserIcon className="w-5 h-5" />}
-            isActive={step === "auth"}
-            isComplete={step === "address" || step === "payment" || isAuthenticated}
-          />
-          <ChevronRight className="w-5 h-5 text-charcoal-300 flex-shrink-0" />
-          <StepIndicator
-            step={2}
-            label="Address"
-            icon={<MapPin className="w-5 h-5" />}
-            isActive={step === "address"}
-            isComplete={step === "payment"}
-          />
-          <ChevronRight className="w-5 h-5 text-charcoal-300 flex-shrink-0" />
-          <StepIndicator
-            step={3}
-            label="Payment"
-            icon={<CreditCard className="w-5 h-5" />}
-            isActive={step === "payment"}
-            isComplete={false}
-          />
-        </div>
-        {}
-        {step === "auth" && !isAuthenticated && (
-           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-           >
-              <h2 className="font-display text-2xl text-charcoal-900 mb-2">
-                Contact Information
-              </h2>
-              <p className="text-charcoal-600 mb-8">Enter your details to proceed with the order.</p>
-              <div className="bg-white rounded-2xl p-6 shadow-soft-md">
-                {!otpSent ? (
-                    <div className="space-y-4">
-                        <Input
-                            label="Full Name"
-                            placeholder="John Doe"
-                            value={authForm.name}
-                            onChange={(e) => setAuthForm(prev => ({...prev, name: e.target.value}))}
-                            variant="luxury"
-                        />
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Input
-                                label="Email"
-                                type="email"
-                                placeholder="john@example.com"
-                                value={authForm.email}
-                                onChange={(e) => setAuthForm(prev => ({...prev, email: e.target.value}))}
-                                variant="luxury"
-                            />
-                            <Input
-                                label="Phone"
-                                type="tel"
-                                placeholder="9876543210"
-                                value={authForm.phone}
-                                onChange={(e) => setAuthForm(prev => ({...prev, phone: e.target.value}))}
-                                variant="luxury"
-                            />
-                         </div>
-                         <Button
-                            variant="primary"
-                            size="lg"
-                            fullWidth
-                            onClick={handleSendOtp}
-                            isLoading={isLoading}
-                         >
-                            Continue
-                         </Button>
-                         <div className="text-center pt-2">
-                            <Link href="/login?redirect=/checkout" className="text-sm text-gold-600 hover:underline">
-                                Already have an account? Login with Password
-                            </Link>
-                         </div>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        <div className="text-center">
-                            <p className="text-charcoal-600 mb-1">Enter the 6-digit code sent to</p>
-                            <p className="font-medium text-charcoal-900">{authForm.email}</p>
-                            <button 
-                                onClick={() => setOtpSent(false)} 
-                                className="text-sm text-gold-600 hover:underline mt-2"
-                            >
-                                Change Email
-                            </button>
-                        </div>
-                        <div className="max-w-xs mx-auto">
-                            <Input
-                                label="OTP Code"
-                                placeholder="123456"
-                                value={authForm.otp}
-                                onChange={(e) => setAuthForm(prev => ({...prev, otp: e.target.value.replace(/\D/g, '').slice(0, 6)}))}
-                                variant="luxury"
-                                className="text-center tracking-widest text-xl"
-                            />
-                        </div>
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            fullWidth
-                            onClick={handleVerifyOtp}
-                            isLoading={isLoading}
-                        >
-                            Verify & Continue
-                        </Button>
-                        <div className="text-center">
-                            <button
-                                onClick={handleSendOtp}
-                                disabled={otpTimer > 0 || isLoading}
-                                className="text-sm text-charcoal-500 hover:text-charcoal-900 disabled:opacity-50"
-                            >
-                                {otpTimer > 0 ? `Resend code in ${otpTimer}s` : "Resend code"}
-                            </button>
-                        </div>
-                    </div>
-                )}
-              </div>
-           </motion.div>
-        )}
-        {}
-        {step === "address" && (isAuthenticated || true) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="flex justify-between items-center mb-6">
-                 <h2 className="font-display text-2xl text-charcoal-900">
-                Delivery Address
-                </h2>
-                {isAuthenticated && (
-                     <p className="text-sm text-charcoal-500">
-                         Logged in as <span className="text-charcoal-900 font-medium">{user?.email}</span>
-                     </p>
-                )}
-            </div>
-            {}
-            {isAuthenticated && savedAddresses.length > 0 && !showNewAddressForm && (
-              <div className="space-y-4 mb-6">
-                {savedAddresses.map((addr) => (
-                  <div
-                    key={addr.id}
-                    onClick={() => setSelectedAddressId(addr.id)}
-                    className={cn(
-                      "p-4 rounded-xl border-2 cursor-pointer transition-colors",
-                      selectedAddressId === addr.id
-                        ? "border-charcoal-900 bg-cream-50"
-                        : "border-charcoal-200 hover:border-charcoal-300"
-                    )}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-charcoal-900">
-                          {addr.name}
-                          {addr.isDefault && (
-                            <Badge variant="gold" size="sm" className="ml-2">
-                              Default
-                            </Badge>
-                          )}
-                        </p>
-                        <p className="text-sm text-charcoal-600 mt-1">
-                          {addr.street}, {addr.city}, {addr.state} - {addr.pincode}
-                        </p>
-                        <p className="text-sm text-charcoal-500 mt-1">
-                          {addr.phone}
-                        </p>
-                      </div>
-                      {selectedAddressId === addr.id && (
-                        <div className="w-6 h-6 rounded-full bg-charcoal-900 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <button
-                  onClick={() => {
-                    setShowNewAddressForm(true);
-                    setSelectedAddressId(null);
-                  }}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-charcoal-200 text-charcoal-600 hover:border-charcoal-400 hover:text-charcoal-900 transition-colors"
-                >
-                  + Add New Address
-                </button>
-              </div>
-            )}
-            {}
-            {(savedAddresses.length === 0 || showNewAddressForm) && (
-              <div className="bg-white rounded-2xl p-6 shadow-soft-md">
-                {showNewAddressForm && (
-                  <button
-                    onClick={() => {
-                      setShowNewAddressForm(false);
-                      if (savedAddresses.length > 0) {
-                        setSelectedAddressId(savedAddresses[0].id);
-                      }
-                    }}
-                    className="text-sm text-charcoal-600 hover:text-charcoal-900 mb-4 transition-colors"
-                  >
-                    ← Back to saved addresses
-                  </button>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="flex flex-col lg:flex-row gap-5">
+      {/* Left column: steps */}
+      <div className="flex-1 space-y-3">
+        {/* ─── Step 1: Login / Account ─── */}
+        <CheckoutSection
+          stepNumber={1}
+          title="Login"
+          isActive={step === "auth" && !isAuthenticated}
+          isComplete={isAuthenticated}
+          completeSummary={
+            isAuthenticated && user ? (
+              <span className="text-sm text-gray-900">
+                {user.name} &mdash; {user.email}
+              </span>
+            ) : null
+          }
+          onChangeClick={undefined}
+        >
+          {step === "auth" && !isAuthenticated && (
+            <div>
+              {!otpSent ? (
+                <div className="space-y-3">
                   <Input
                     label="Full Name"
                     placeholder="John Doe"
-                    value={address.name}
+                    value={authForm.name}
                     onChange={(e) =>
-                      setAddress({ ...address, name: e.target.value })
+                      setAuthForm((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    variant="luxury"
                   />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Email"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={authForm.email}
+                      onChange={(e) =>
+                        setAuthForm((prev) => ({ ...prev, email: e.target.value }))
+                      }
+                    />
+                    <Input
+                      label="Phone"
+                      type="tel"
+                      placeholder="9876543210"
+                      value={authForm.phone}
+                      onChange={(e) =>
+                        setAuthForm((prev) => ({ ...prev, phone: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <button
+                    onClick={handleSendOtp}
+                    disabled={isLoading}
+                    className="px-10 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                  >
+                    {isLoading ? "Please wait..." : "Continue"}
+                  </button>
+                  <div className="pt-1">
+                    <Link
+                      href="/login?redirect=/checkout"
+                      className="text-sm hover:underline text-green-600 hover:text-green-700"
+                    >
+                      Already have an account? Sign in
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">
+                      Enter the 6-digit code sent to{" "}
+                      <span className="font-semibold text-gray-900">
+                        {authForm.email}
+                      </span>
+                    </p>
+                    <button
+                      onClick={() => setOtpSent(false)}
+                      className="text-xs hover:underline mt-1 text-green-600 hover:text-green-700"
+                    >
+                      Change Email
+                    </button>
+                  </div>
+                  <div className="max-w-[200px]">
+                    <Input
+                      label="OTP Code"
+                      placeholder="123456"
+                      value={authForm.otp}
+                      onChange={(e) =>
+                        setAuthForm((prev) => ({
+                          ...prev,
+                          otp: e.target.value.replace(/\D/g, "").slice(0, 6),
+                        }))
+                      }
+                    />
+                  </div>
+                  <button
+                    onClick={handleVerifyOtp}
+                    disabled={isLoading}
+                    className="px-10 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                  >
+                    {isLoading ? "Verifying..." : "Verify & Continue"}
+                  </button>
+                  <div>
+                    <button
+                      onClick={handleSendOtp}
+                      disabled={otpTimer > 0 || isLoading}
+                      className="text-xs disabled:opacity-50 hover:underline text-green-600 hover:text-green-700"
+                    >
+                      {otpTimer > 0 ? `Resend code in ${otpTimer}s` : "Resend code"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CheckoutSection>
+
+        {/* ─── Step 2: Shipping Address ─── */}
+        <CheckoutSection
+          stepNumber={2}
+          title="Shipping Address"
+          isActive={step === "address"}
+          isComplete={isStepComplete("address")}
+          completeSummary={
+            isStepComplete("address") && selectedAddr ? (
+              <span className="text-sm text-gray-900">
+                {selectedAddr.name}, {selectedAddr.street}, {selectedAddr.city},{" "}
+                {selectedAddr.state} - {selectedAddr.pincode}
+              </span>
+            ) : null
+          }
+          onChangeClick={
+            isStepComplete("address") ? () => setStep("address") : undefined
+          }
+        >
+          {step === "address" && (
+            <div>
+              {/* Saved addresses */}
+              {isAuthenticated && savedAddresses.length > 0 && !showNewAddressForm && (
+                <div className="space-y-3 mb-4">
+                  <p className="text-sm font-semibold text-gray-900">
+                    Your addresses
+                  </p>
+                  {savedAddresses.map((addr) => (
+                    <label
+                      key={addr.id}
+                      className={cn(
+                        "flex items-start gap-3 p-3 rounded-lg border cursor-pointer",
+                        selectedAddressId === addr.id
+                          ? "bg-green-50 border-green-600"
+                          : "bg-white border-gray-200"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="savedAddress"
+                        checked={selectedAddressId === addr.id}
+                        onChange={() => setSelectedAddressId(addr.id)}
+                        className="mt-1 accent-green-600"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {addr.name}
+                          {addr.isDefault && (
+                            <span className="text-xs font-normal ml-2 px-2 py-0.5 rounded bg-gray-100 text-gray-500">
+                              Default
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-sm text-gray-900">
+                          {addr.street}, {addr.city}, {addr.state} - {addr.pincode}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Phone: {addr.phone}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                  <button
+                    onClick={() => {
+                      setShowNewAddressForm(true);
+                      setSelectedAddressId(null);
+                    }}
+                    className="text-sm hover:underline text-green-600 hover:text-green-700"
+                  >
+                    + Add a new address
+                  </button>
+                </div>
+              )}
+
+              {/* New address form */}
+              {(savedAddresses.length === 0 || showNewAddressForm) && (
+                <div className="space-y-3">
+                  {showNewAddressForm && (
+                    <button
+                      onClick={() => {
+                        setShowNewAddressForm(false);
+                        if (savedAddresses.length > 0) {
+                          setSelectedAddressId(savedAddresses[0].id);
+                        }
+                      }}
+                      className="text-sm hover:underline mb-2 text-green-600 hover:text-green-700"
+                    >
+                      &larr; Back to saved addresses
+                    </button>
+                  )}
+                  <p className="text-sm font-semibold text-gray-900">
+                    Add a new address
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Full Name"
+                      placeholder="John Doe"
+                      value={address.name}
+                      onChange={(e) => setAddress({ ...address, name: e.target.value })}
+                    />
+                    <Input
+                      label="Phone"
+                      type="tel"
+                      placeholder="9876543210"
+                      value={address.phone}
+                      onChange={(e) =>
+                        setAddress({
+                          ...address,
+                          phone: e.target.value.replace(/\D/g, "").slice(0, 10),
+                        })
+                      }
+                    />
+                  </div>
                   <Input
                     label="Email"
                     type="email"
                     placeholder="john@example.com"
                     value={address.email}
-                    onChange={(e) =>
-                      setAddress({ ...address, email: e.target.value })
-                    }
-                    variant="luxury"
+                    onChange={(e) => setAddress({ ...address, email: e.target.value })}
                   />
                   <Input
-                    label="Phone"
-                    type="tel"
-                    placeholder="9876543210"
-                    value={address.phone}
-                    onChange={(e) =>
-                      setAddress({
-                        ...address,
-                        phone: e.target.value.replace(/\D/g, "").slice(0, 10),
-                      })
-                    }
-                    variant="luxury"
+                    label="Street Address"
+                    placeholder="123 Main Street, Apartment 4B"
+                    value={address.street}
+                    onChange={(e) => setAddress({ ...address, street: e.target.value })}
                   />
-                  <Input
-                    label="Pincode"
-                    placeholder="400001"
-                    value={address.pincode}
-                    onChange={(e) =>
-                      setAddress({
-                        ...address,
-                        pincode: e.target.value.replace(/\D/g, "").slice(0, 6),
-                      })
-                    }
-                    variant="luxury"
-                  />
-                  <div className="md:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
-                      label="Street Address"
-                      placeholder="123 Main Street, Apartment 4B"
-                      value={address.street}
+                      label="City"
+                      placeholder="Mumbai"
+                      value={address.city}
+                      onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                    />
+                    <Input
+                      label="State"
+                      placeholder="Maharashtra"
+                      value={address.state}
+                      onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                    />
+                    <Input
+                      label="Pincode"
+                      placeholder="400001"
+                      value={address.pincode}
                       onChange={(e) =>
-                        setAddress({ ...address, street: e.target.value })
+                        setAddress({
+                          ...address,
+                          pincode: e.target.value.replace(/\D/g, "").slice(0, 6),
+                        })
                       }
-                      variant="luxury"
                     />
                   </div>
-                  <Input
-                    label="City"
-                    placeholder="Mumbai"
-                    value={address.city}
-                    onChange={(e) =>
-                      setAddress({ ...address, city: e.target.value })
-                    }
-                    variant="luxury"
-                  />
-                  <Input
-                    label="State"
-                    placeholder="Maharashtra"
-                    value={address.state}
-                    onChange={(e) =>
-                      setAddress({ ...address, state: e.target.value })
-                    }
-                    variant="luxury"
-                  />
                 </div>
-              </div>
-            )}
-            <div className="mt-8">
-              <Button
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={handleProceedToPayment}
-                rightIcon={<ArrowRight className="w-5 h-5" />}
-              >
-                Continue to Payment
-              </Button>
-            </div>
-          </motion.div>
-        )}
-        {}
-        {step === "payment" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <button
-              onClick={() => setStep("address")}
-              className="text-sm text-charcoal-600 hover:text-charcoal-900 mb-6 transition-colors"
-            >
-              ← Back to address
-            </button>
-            <h2 className="font-display text-2xl text-charcoal-900 mb-6">
-              Payment
-            </h2>
-            {}
-            <div className="bg-white rounded-2xl p-6 shadow-soft-md mb-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-charcoal-500 mb-1">Delivering to</p>
-                  <p className="font-medium text-charcoal-900">
-                    {getSelectedAddress()?.name}
-                  </p>
-                  <p className="text-sm text-charcoal-600">
-                    {getSelectedAddress()?.street}, {getSelectedAddress()?.city},{" "}
-                    {getSelectedAddress()?.state} - {getSelectedAddress()?.pincode}
-                  </p>
-                </div>
+              )}
+
+              <div className="mt-4">
                 <button
-                  onClick={() => setStep("address")}
-                  className="text-sm text-gold-600 hover:text-gold-700 font-medium"
+                  onClick={handleProceedToPayment}
+                  className="px-10 py-2 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors"
                 >
-                  Change
+                  Use this address
                 </button>
               </div>
             </div>
-            {}
-            <div className="bg-white rounded-2xl p-6 shadow-soft-md mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Lock className="w-5 h-5 text-charcoal-500" />
-                <span className="font-medium text-charcoal-900">
-                  Secure Payment via Razorpay
-                </span>
+          )}
+        </CheckoutSection>
+
+        {/* ─── Step 3: Payment Method ─── */}
+        <CheckoutSection
+          stepNumber={3}
+          title="Payment Method"
+          isActive={step === "payment"}
+          isComplete={isStepComplete("payment")}
+          completeSummary={
+            isStepComplete("payment") ? (
+              <span className="text-sm text-gray-900">
+                {paymentMethod === "online"
+                  ? "Pay Online (Razorpay)"
+                  : "Cash on Delivery"}
+              </span>
+            ) : null
+          }
+          onChangeClick={
+            isStepComplete("payment") ? () => setStep("payment") : undefined
+          }
+        >
+          {step === "payment" && (
+            <div className="space-y-3">
+              {/* Online payment */}
+              <label
+                className={cn(
+                  "flex items-start gap-3 p-3 rounded-lg border cursor-pointer",
+                  paymentMethod === "online"
+                    ? "bg-green-50 border-green-600"
+                    : "bg-white border-gray-200"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  checked={paymentMethod === "online"}
+                  onChange={() => setPaymentMethod("online")}
+                  className="mt-0.5 accent-green-600"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Pay Online
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Credit/Debit Card, UPI, Net Banking via Razorpay
+                  </p>
+                </div>
+              </label>
+
+              {/* COD */}
+              <label
+                className={cn(
+                  "flex items-start gap-3 p-3 rounded-lg border cursor-pointer",
+                  paymentMethod === "cod"
+                    ? "bg-green-50 border-green-600"
+                    : "bg-white border-gray-200"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  checked={paymentMethod === "cod"}
+                  onChange={() => setPaymentMethod("cod")}
+                  className="mt-0.5 accent-green-600"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Cash on Delivery
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Pay when your order is delivered
+                  </p>
+                </div>
+              </label>
+
+              <div className="pt-1">
+                <button
+                  onClick={handleProceedToReview}
+                  className="px-10 py-2 rounded-lg text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                >
+                  Use this payment method
+                </button>
               </div>
-              <p className="text-sm text-charcoal-600">
-                You will be redirected to Razorpay&apos;s secure payment gateway to
-                complete your purchase. We accept all major credit/debit cards,
-                UPI, and net banking.
-              </p>
             </div>
-            <Button
-              variant="gold"
-              size="xl"
-              fullWidth
-              onClick={handlePayment}
-              isLoading={isLoading}
-              leftIcon={<Lock className="w-5 h-5" />}
-            >
-              Pay {formatPrice(total)}
-            </Button>
-          </motion.div>
-        )}
+          )}
+        </CheckoutSection>
+
+        {/* ─── Step 4: Review & Place Order ─── */}
+        <CheckoutSection
+          stepNumber={4}
+          title="Review Items and Shipping"
+          isActive={step === "review"}
+          isComplete={false}
+          completeSummary={null}
+          onChangeClick={undefined}
+        >
+          {step === "review" && (
+            <div>
+              {/* Delivery estimate */}
+              <p className="text-sm mb-3 text-emerald-600">
+                Estimated delivery: 3-5 business days
+              </p>
+
+              {/* Item list */}
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div key={item.id} className="flex gap-3">
+                    <div className="relative w-[80px] h-[80px] flex-shrink-0 rounded-lg overflow-hidden bg-white border border-gray-200">
+                      {item.product?.images?.[0] ? (
+                        <Image
+                          src={item.product.images[0]}
+                          alt={item.product.title}
+                          fill
+                          className="object-contain p-1"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingCart className="w-6 h-6 text-gray-200" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm leading-tight line-clamp-2 text-gray-900">
+                        {item.product?.title}
+                      </p>
+                      {item.variant && (item.variant.optionValues as any[])?.length > 0 && (
+                        <p className="text-xs mt-0.5 text-gray-500">
+                          {(item.variant.optionValues as any[]).map((ov: any) => `${ov.optionName}: ${ov.valueName}`).join(", ")}
+                        </p>
+                      )}
+                      <p className="text-sm font-semibold mt-1 text-red-600">
+                        {formatPrice(item.price)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Qty: {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Coupon section */}
+              <div className="mt-5 pt-4 border-t border-gray-200">
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100">
+                    <span className="text-sm text-emerald-600">
+                      Coupon <span className="font-semibold">{appliedCoupon.code}</span>{" "}
+                      applied &mdash; saving {formatPrice(appliedCoupon.discount)}
+                    </span>
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="text-xs hover:underline text-green-600 hover:text-green-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-400 text-gray-900 focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={!couponCode.trim() || isApplyingCoupon}
+                      className="px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 transition-colors"
+                    >
+                      {isApplyingCoupon ? "..." : "Apply"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Place order */}
+              <div className="mt-5 pt-4 border-t border-gray-200">
+                <button
+                  onClick={handlePayment}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto px-10 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+                >
+                  {isLoading ? "Processing..." : `Place your order — ${formatPrice(total)}`}
+                </button>
+                <p className="text-xs mt-2 text-gray-500">
+                  By placing your order, you agree to ManaKart&apos;s{" "}
+                  <Link href="/terms" className="hover:underline text-green-600 hover:text-green-700">
+                    Conditions of Use
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="hover:underline text-green-600 hover:text-green-700">
+                    Privacy Notice
+                  </Link>
+                  .
+                </p>
+              </div>
+            </div>
+          )}
+        </CheckoutSection>
       </div>
-      {}
-      <div className="lg:col-span-1">
-        <div className="bg-white rounded-2xl p-6 shadow-soft-md sticky top-32">
-          <h3 className="font-display text-lg text-charcoal-900 mb-6">
+
+      {/* Right column: Order summary */}
+      <div className="lg:w-[300px] flex-shrink-0">
+        <div className="bg-white rounded-xl shadow-sm p-5 sticky top-[110px] border border-gray-200">
+          {/* Place order button (top) */}
+          {step === "review" && (
+            <div className="mb-4">
+              <button
+                onClick={handlePayment}
+                disabled={isLoading}
+                className="w-full px-4 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+              >
+                {isLoading ? "Processing..." : "Place your order"}
+              </button>
+              <p className="text-xs mt-2 text-center text-gray-500">
+                By placing your order, you agree to ManaKart&apos;s terms.
+              </p>
+              <div className="border-t border-gray-200 mt-3 pt-3" />
+            </div>
+          )}
+
+          <h3 className="text-lg font-semibold mb-3 text-gray-900">
             Order Summary
           </h3>
-          {}
-          <div className="space-y-4 mb-6">
-            {items.map((item) => (
-              <div key={item.id} className="flex gap-4">
-                <div className="relative w-16 h-20 rounded-lg overflow-hidden bg-cream-200 flex-shrink-0">
-                  {item.type === "outfit" && item.outfit?.heroImages?.[0] ? (
-                    <Image
-                      src={item.outfit.heroImages[0]}
-                      alt={item.outfit.title}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : item.type === "product" && item.product?.images?.[0] ? (
-                    <Image
-                      src={item.product.images[0]}
-                      alt={item.product.title}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : null}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-charcoal-900 text-sm truncate">
-                    {item.type === "outfit"
-                      ? item.outfit?.title
-                      : item.product?.title}
-                  </p>
-                  <p className="text-xs text-charcoal-500">Qty: {item.quantity}</p>
-                  <p className="text-sm text-charcoal-900 mt-1">
-                    {formatPrice(item.price)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Divider className="mb-6" />
-          {}
-          <div className="mb-6">
-            {appliedCoupon ? (
-              <div className="flex items-center justify-between p-3 bg-gold-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-gold-600" />
-                  <span className="text-sm font-medium text-gold-700">
-                    {appliedCoupon.code}
-                  </span>
-                </div>
-                <button
-                  onClick={handleRemoveCoupon}
-                  className="text-charcoal-500 hover:text-charcoal-700"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Coupon code"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="flex-1"
-                />
-                <Button
-                  variant="secondary"
-                  onClick={handleApplyCoupon}
-                  isLoading={isApplyingCoupon}
-                  disabled={!couponCode.trim()}
-                >
-                  Apply
-                </Button>
-              </div>
-            )}
-          </div>
-          {}
-          <div className="space-y-3 mb-6">
-            <div className="flex justify-between text-sm">
-              <span className="text-charcoal-600">Subtotal</span>
-              <span className="text-charcoal-900">{formatPrice(subtotal)}</span>
+
+          <div className="space-y-2 text-sm text-gray-900">
+            <div className="flex justify-between">
+              <span>Items ({itemCount}):</span>
+              <span>{formatPrice(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-charcoal-600 flex items-center gap-1">
-                <Truck className="w-4 h-4" />
-                Delivery
-              </span>
-              <span className="text-charcoal-900">
-                {deliveryCharge === 0 ? (
-                  <span className="text-gold-600">Free</span>
-                ) : (
-                  formatPrice(deliveryCharge)
-                )}
-              </span>
+            <div className="flex justify-between">
+              <span>Shipping & handling:</span>
+              <span className="text-emerald-600">FREE</span>
             </div>
             {appliedCoupon && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gold-600">Discount</span>
-                <span className="text-gold-600">
-                  -{formatPrice(appliedCoupon.discount)}
-                </span>
+              <div className="flex justify-between text-emerald-600">
+                <span>Coupon ({appliedCoupon.code}):</span>
+                <span>-{formatPrice(appliedCoupon.discount)}</span>
               </div>
             )}
           </div>
-          <Divider className="mb-6" />
-          <div className="flex justify-between items-center">
-            <span className="font-medium text-charcoal-900">Total</span>
-            <span className="font-serif text-2xl text-charcoal-900">
-              {formatPrice(total)}
-            </span>
+
+          <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between text-lg font-semibold text-gray-900">
+            <span>Order Total:</span>
+            <span>{formatPrice(total)}</span>
           </div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-xs text-gold-600 mt-4 text-center font-medium tracking-wide"
-          >
-            Delivered with Distinction — Complimentary on Every Order
-          </motion.p>
         </div>
       </div>
     </div>
   );
 }
-function StepIndicator({
-  step,
-  label,
-  icon,
-  isActive,
-  isComplete,
-}: {
-  step: number;
-  label: string;
-  icon: React.ReactNode;
+
+// --- Reusable checkout section ---
+
+interface CheckoutSectionProps {
+  stepNumber: number;
+  title: string;
   isActive: boolean;
   isComplete: boolean;
-}) {
+  completeSummary: React.ReactNode;
+  onChangeClick: (() => void) | undefined;
+  children: React.ReactNode;
+}
+
+function CheckoutSection({
+  stepNumber,
+  title,
+  isActive,
+  isComplete,
+  completeSummary,
+  onChangeClick,
+  children,
+}: CheckoutSectionProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3",
-        isActive ? "text-charcoal-900" : isComplete ? "text-gold-600" : "text-charcoal-400"
-      )}
-    >
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+      {/* Section header */}
       <div
         className={cn(
-          "w-10 h-10 rounded-full flex items-center justify-center",
-          isActive
-            ? "bg-charcoal-900 text-white"
-            : isComplete
-            ? "bg-gold-500 text-white"
-            : "bg-charcoal-100 text-charcoal-400"
+          "flex items-center justify-between px-5 py-3",
+          isActive ? "bg-gray-50 border-b border-gray-200" : "bg-white"
         )}
       >
-        {isComplete ? <Check className="w-5 h-5" /> : icon}
+        <div className="flex items-center gap-3">
+          <span
+            className={cn(
+              "text-lg font-semibold",
+              isComplete ? "text-emerald-600" : "text-gray-900"
+            )}
+          >
+            {stepNumber}
+          </span>
+          <span className="text-lg font-semibold text-gray-900">
+            {title}
+          </span>
+          {isComplete && (
+            <Check className="w-5 h-5 text-emerald-600" />
+          )}
+        </div>
+        {isComplete && onChangeClick && (
+          <button
+            onClick={onChangeClick}
+            className="text-sm hover:underline text-green-600 hover:text-green-700"
+          >
+            Change
+          </button>
+        )}
       </div>
-      <span className="font-medium whitespace-nowrap hidden sm:block">{label}</span>
+
+      {/* Completed summary */}
+      {isComplete && completeSummary && !isActive && (
+        <div className="px-5 py-3 pl-14">{completeSummary}</div>
+      )}
+
+      {/* Active content */}
+      {isActive && <div className="px-5 py-4 pl-14">{children}</div>}
     </div>
   );
 }

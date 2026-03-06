@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET || "default_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error("JWT_SECRET environment variable is required");
 const secret = new TextEncoder().encode(JWT_SECRET);
 
 export async function middleware(request: NextRequest) {
@@ -14,7 +15,7 @@ export async function middleware(request: NextRequest) {
       return new NextResponse(null, {
         status: 200,
         headers: {
-          "Access-Control-Allow-Origin": process.env.NEXT_PUBLIC_APP_URL || "*",
+          "Access-Control-Allow-Origin": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
           "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type, Authorization",
           "Access-Control-Allow-Credentials": "true",
@@ -22,7 +23,7 @@ export async function middleware(request: NextRequest) {
       });
     }
     const response = NextResponse.next();
-    response.headers.set("Access-Control-Allow-Origin", process.env.NEXT_PUBLIC_APP_URL || "*");
+    response.headers.set("Access-Control-Allow-Origin", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
     response.headers.set("Access-Control-Allow-Credentials", "true");
     return response;
   }

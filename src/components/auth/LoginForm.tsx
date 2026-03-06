@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mail, ArrowRight, ArrowLeft, User, Phone } from "lucide-react";
-import { Button, Input, Divider } from "@/components/ui";
 import { authApi } from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
 import { isValidEmail, isValidPhone } from "@/lib/utils";
 import toast from "react-hot-toast";
+
 type Step = "email" | "otp" | "register";
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,10 +21,11 @@ export function LoginForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidEmail(email)) {
-      toast.error("Kindly enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
     setIsLoading(true);
@@ -39,6 +39,7 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6) {
@@ -59,7 +60,7 @@ export function LoginForm() {
         return;
       }
       setUser(response.user);
-      toast.success("Welcome back to Succession");
+      toast.success("Welcome to ManaKart!");
       router.push(redirect);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid OTP";
@@ -73,6 +74,7 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -100,6 +102,7 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
+
   const handleResendOtp = async () => {
     setIsLoading(true);
     try {
@@ -111,160 +114,169 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
+
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-soft-lg">
-      <AnimatePresence mode="wait">
+    <>
+      {/* Main Card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-5">
         {step === "email" && (
-          <motion.form
-            key="email"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            onSubmit={handleSendOtp}
-          >
-            <div className="mb-6">
-              <Input
+          <form onSubmit={handleSendOtp}>
+            <h1 className="text-[28px] font-semibold text-gray-900 mb-3">
+              Sign in
+            </h1>
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-900 mb-1">
+                Email
+              </label>
+              <input
                 type="email"
-                label="Email Address"
-                placeholder="name@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                leftIcon={<Mail className="w-5 h-5" />}
-                variant="luxury"
                 disabled={isLoading}
+                placeholder="name@email.com"
+                className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/15 transition-shadow"
               />
             </div>
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-5 h-5" />}
-            >
-              Continue with Email
-            </Button>
-            <p className="text-center text-sm text-charcoal-500 mt-6">
-              We&apos;ll send you a one-time password to verify your email.
-            </p>
-          </motion.form>
-        )}
-        {step === "otp" && (
-          <motion.form
-            key="otp"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            onSubmit={handleVerifyOtp}
-          >
             <button
-              type="button"
-              onClick={() => setStep("email")}
-              className="flex items-center gap-2 text-sm text-charcoal-600 hover:text-charcoal-900 mb-6 transition-colors"
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-2 px-3 text-sm font-semibold bg-gray-900 text-white rounded-lg hover:bg-gray-800 cursor-pointer disabled:opacity-60 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Change email
+              {isLoading ? "Sending..." : "Continue"}
             </button>
-            <p className="text-charcoal-600 mb-6">
-              Enter the 6-digit code sent to{" "}
-              <span className="font-medium text-charcoal-900">{email}</span>
+            <p className="text-xs text-gray-500 mt-4 leading-[1.4]">
+              By continuing, you agree to ManaKart&apos;s{" "}
+              <Link href="/terms" className="text-green-600 hover:text-green-700 hover:underline">
+                Conditions of Use
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="text-green-600 hover:text-green-700 hover:underline">
+                Privacy Notice
+              </Link>
+              .
             </p>
-            <div className="mb-6">
-              <Input
+          </form>
+        )}
+
+        {step === "otp" && (
+          <form onSubmit={handleVerifyOtp}>
+            <h1 className="text-[28px] font-semibold text-gray-900 mb-2">
+              Verification required
+            </h1>
+            <p className="text-sm text-gray-500 mb-4">
+              To continue, complete this verification step. We&apos;ve sent a One Time Password (OTP) to{" "}
+              <span className="font-semibold text-gray-900">{email}</span>.
+              Please enter it below.
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-900 mb-1">
+                Enter OTP
+              </label>
+              <input
                 type="text"
-                label="Verification Code"
-                placeholder="Six-digit code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                variant="luxury"
                 disabled={isLoading}
-                className="text-center text-2xl tracking-[0.5em] font-mono"
+                placeholder="Enter 6-digit code"
+                className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/15 tracking-[0.3em] font-mono text-center transition-shadow"
+                maxLength={6}
               />
             </div>
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-5 h-5" />}
+              disabled={isLoading}
+              className="w-full py-2 px-3 text-sm font-semibold bg-gray-900 text-white rounded-lg hover:bg-gray-800 cursor-pointer disabled:opacity-60 transition-colors"
             >
-              Verify & Continue
-            </Button>
-            <div className="text-center mt-6">
+              {isLoading ? "Verifying..." : "Continue"}
+            </button>
+            <div className="mt-4 flex items-center justify-between text-sm">
               <button
                 type="button"
                 onClick={handleResendOtp}
                 disabled={isLoading}
-                className="text-sm text-charcoal-600 hover:text-charcoal-900 transition-colors disabled:opacity-50"
+                className="text-green-600 hover:text-green-700 hover:underline disabled:opacity-50"
               >
-                Didn&apos;t receive the code? <span className="font-medium">Resend</span>
+                Resend OTP
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep("email")}
+                className="text-green-600 hover:text-green-700 hover:underline"
+              >
+                Change email
               </button>
             </div>
-          </motion.form>
+          </form>
         )}
+
         {step === "register" && (
-          <motion.form
-            key="register"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            onSubmit={handleRegister}
-          >
-            <div className="text-center mb-6">
-              <h2 className="font-display text-xl text-charcoal-900 mb-2">
-                Complete Your Profile
-              </h2>
-              <p className="text-charcoal-600 text-sm">
-                Just a few more details to get started.
-              </p>
+          <form onSubmit={handleRegister}>
+            <h1 className="text-[28px] font-semibold text-gray-900 mb-2">
+              Create account
+            </h1>
+            <p className="text-sm text-gray-500 mb-4">
+              Just a few more details to get started.
+            </p>
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  Your name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={isLoading}
+                  placeholder="First and last name"
+                  className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/15 transition-shadow"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  Mobile number
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  disabled={isLoading}
+                  placeholder="Mobile number"
+                  className="w-full px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg outline-none focus:border-green-600 focus:ring-2 focus:ring-green-600/15 transition-shadow"
+                />
+              </div>
             </div>
-            <div className="space-y-4 mb-6">
-              <Input
-                type="text"
-                label="Full Name"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                leftIcon={<User className="w-5 h-5" />}
-                variant="luxury"
-                disabled={isLoading}
-              />
-              <Input
-                type="tel"
-                label="Phone Number"
-                placeholder="9876543210"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                leftIcon={<Phone className="w-5 h-5" />}
-                variant="luxury"
-                disabled={isLoading}
-              />
-            </div>
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-5 h-5" />}
+              disabled={isLoading}
+              className="w-full py-2 px-3 text-sm font-semibold bg-gray-900 text-white rounded-lg hover:bg-gray-800 cursor-pointer disabled:opacity-60 transition-colors"
             >
-              Create Account
-            </Button>
-          </motion.form>
+              {isLoading ? "Creating account..." : "Create your ManaKart account"}
+            </button>
+          </form>
         )}
-      </AnimatePresence>
-      <Divider label="or" className="my-8" />
-      <p className="text-center text-sm text-charcoal-600">
-        By continuing, you agree to our{" "}
-        <Link href="/terms" className="text-charcoal-900 hover:text-gold-600 underline">
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link href="/privacy" className="text-charcoal-900 hover:text-gold-600 underline">
-          Privacy Policy
-        </Link>
-      </p>
-    </div>
+      </div>
+
+      {/* Divider with "New to ManaKart?" */}
+      {step === "email" && (
+        <>
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-[#f1f3f6] px-2 text-gray-400">
+                New to ManaKart?
+              </span>
+            </div>
+          </div>
+          <Link
+            href="/login"
+            className="block w-full py-2 px-3 text-sm text-center bg-white border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 shadow-sm cursor-pointer transition-colors"
+          >
+            Create your ManaKart account
+          </Link>
+        </>
+      )}
+    </>
   );
 }

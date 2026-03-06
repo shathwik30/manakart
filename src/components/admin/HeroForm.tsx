@@ -64,21 +64,21 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 flex items-center justify-between p-6 border-b border-charcoal-100 bg-white">
-          <h2 className="text-xl font-serif text-charcoal-900">
+        <div className="sticky top-0 flex items-center justify-between p-6 border-b border-gray-100 bg-white">
+          <h2 className="text-xl font-semibold text-gray-900">
             {hero ? "Edit Hero Slide" : "Add Hero Slide"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-cream-100 rounded transition-colors"
+            className="p-1 hover:bg-gray-50 rounded transition-colors"
           >
-            <X className="w-5 h-5 text-charcoal-600" />
+            <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Image Preview */}
           {formData.image && (
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-cream-200">
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
               <img
                 src={formData.image}
                 alt="Preview"
@@ -90,7 +90,7 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-charcoal-900 mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Image URL *
             </label>
             <input
@@ -100,15 +100,15 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
                 setFormData({ ...formData, image: e.target.value })
               }
               placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-600"
               required
             />
-            <p className="text-xs text-charcoal-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               Use high-resolution images (recommended: 1920x1080px or larger)
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-900 mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Title *
             </label>
             <input
@@ -118,15 +118,15 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
                 setFormData({ ...formData, title: e.target.value })
               }
               placeholder="Timeless Elegance"
-              className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-600"
               required
             />
-            <p className="text-xs text-charcoal-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               Main headline displayed on the hero slide
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-charcoal-900 mb-2">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
               Subtitle
             </label>
             <textarea
@@ -136,15 +136,15 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               }
               placeholder="Discover our new collection of refined classics"
               rows={3}
-              className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500 resize-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-600 resize-none"
             />
-            <p className="text-xs text-charcoal-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               Optional description text below the title
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-charcoal-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 CTA Button Text
               </label>
               <input
@@ -154,11 +154,11 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
                   setFormData({ ...formData, ctaText: e.target.value })
                 }
                 placeholder="Shop Now"
-                className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-600"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-charcoal-900 mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 CTA Button Link
               </label>
               <input
@@ -167,8 +167,8 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, ctaLink: e.target.value })
                 }
-                placeholder="/collections"
-                className="w-full px-4 py-2 border border-charcoal-200 rounded-lg focus:outline-none focus:border-gold-500"
+                placeholder="/products"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-600"
               />
             </div>
           </div>
@@ -180,13 +180,13 @@ export function HeroForm({ hero, onClose, onSuccess }: HeroFormProps) {
               onChange={(e) =>
                 setFormData({ ...formData, isActive: e.target.checked })
               }
-              className="w-4 h-4 text-gold-500 rounded"
+              className="w-4 h-4 text-green-600 rounded"
             />
-            <label htmlFor="isActive" className="text-sm text-charcoal-900">
+            <label htmlFor="isActive" className="text-sm text-gray-900">
               Active (visible on website)
             </label>
           </div>
-          <div className="flex gap-3 pt-4 border-t border-charcoal-100">
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
             <Button
               variant="secondary"
               fullWidth

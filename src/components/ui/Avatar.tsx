@@ -20,7 +20,7 @@ export function Avatar({ src, alt, name, size = "md", className }: AvatarProps) 
         src={src}
         alt={alt || name || "Avatar"}
         className={cn(
-          "rounded-full object-cover bg-charcoal-100",
+          "rounded-full object-cover bg-gray-100",
           sizes[size],
           className
         )}
@@ -30,7 +30,7 @@ export function Avatar({ src, alt, name, size = "md", className }: AvatarProps) 
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center bg-charcoal-900 text-cream-100 font-medium",
+        "rounded-full flex items-center justify-center bg-green-100 text-green-600 font-medium",
         sizes[size],
         className
       )}

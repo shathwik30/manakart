@@ -52,6 +52,9 @@ async function api<T>(endpoint: string, options: RequestOptions = {}): Promise<T
     throw new ApiError("Network error. Please try again.", 0);
   }
 }
+
+// ─── Auth ───
+
 export const authApi = {
   sendOtp: (email: string) =>
     api<{ message: string }>("/api/auth/send-otp", { method: "POST", body: { email } }),
@@ -63,36 +66,125 @@ export const authApi = {
   getMe: () => api<{ user: User }>("/api/auth/me"),
   logout: () => api<{ message: string }>("/api/auth/logout", { method: "POST" }),
 };
+
+// ─── Products ───
+
 export const productsApi = {
-  getAll: (params?: { category?: string; active?: boolean }) => {
+  getAll: (params?: {
+    categoryId?: string;
+    brandId?: string;
+    search?: string;
+    sort?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    page?: number;
+    limit?: number;
+  }) => {
     const searchParams = new URLSearchParams();
-    if (params?.category) searchParams.set("category", params.category);
-    if (params?.active !== undefined) searchParams.set("active", String(params.active));
+    if (params?.categoryId) searchParams.set("categoryId", params.categoryId);
+    if (params?.brandId) searchParams.set("brandId", params.brandId);
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.sort) searchParams.set("sort", params.sort);
+    if (params?.minPrice !== undefined) searchParams.set("minPrice", String(params.minPrice));
+    if (params?.maxPrice !== undefined) searchParams.set("maxPrice", String(params.maxPrice));
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
     const query = searchParams.toString();
-    return api<{ products: Product[] }>(`/api/products${query ? `?${query}` : ""}`);
+    return api<{ products: Product[]; pagination: Pagination }>(`/api/products${query ? `?${query}` : ""}`);
   },
   getById: (id: string) => api<{ product: Product }>(`/api/products/${id}`),
   getBySlug: (slug: string) => api<{ product: Product }>(`/api/products/${slug}`),
 };
-export const outfitsApi = {
-  getAll: (params?: { type?: string; featured?: boolean }) => {
+
+// ─── Categories ───
+
+export const categoriesApi = {
+  getAll: (params?: { nav?: boolean }) => {
     const searchParams = new URLSearchParams();
-    if (params?.type) searchParams.set("type", params.type);
-    if (params?.featured !== undefined) searchParams.set("featured", String(params.featured));
+    if (params?.nav) searchParams.set("nav", "true");
     const query = searchParams.toString();
-    return api<{ outfits: Outfit[] }>(`/api/outfits${query ? `?${query}` : ""}`);
+    return api<{ categories: Category[] }>(`/api/categories${query ? `?${query}` : ""}`);
   },
-  getBySlug: (slug: string) => api<{ outfit: OutfitDetail }>(`/api/outfits/${slug}`),
+  getBySlug: (slug: string) => api<{ category: Category; products: Product[]; pagination: Pagination }>(`/api/categories/${slug}`),
 };
+
+// ─── Brands ───
+
+export const brandsApi = {
+  getAll: () => api<{ brands: Brand[] }>("/api/brands"),
+};
+
+// ─── Deals ───
+
+export const dealsApi = {
+  getActive: () => api<{ deals: Deal[] }>("/api/deals"),
+};
+
+// ─── Search ───
+
+export const searchApi = {
+  search: (params: {
+    q: string;
+    categoryId?: string;
+    brandId?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sort?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("q", params.q);
+    if (params.categoryId) searchParams.set("categoryId", params.categoryId);
+    if (params.brandId) searchParams.set("brandId", params.brandId);
+    if (params.minPrice !== undefined) searchParams.set("minPrice", String(params.minPrice));
+    if (params.maxPrice !== undefined) searchParams.set("maxPrice", String(params.maxPrice));
+    if (params.sort) searchParams.set("sort", params.sort);
+    if (params.page) searchParams.set("page", String(params.page));
+    if (params.limit) searchParams.set("limit", String(params.limit));
+    return api<{ products: Product[]; pagination: Pagination }>(`/api/search?${searchParams.toString()}`);
+  },
+};
+
+// ─── Reviews ───
+
+export const reviewsApi = {
+  getForProduct: (productId: string, params?: { page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", String(params.page));
+    if (params?.limit) searchParams.set("limit", String(params.limit));
+    const query = searchParams.toString();
+    return api<{ reviews: Review[]; stats: ReviewStats; pagination: Pagination }>(
+      `/api/products/${productId}/reviews${query ? `?${query}` : ""}`
+    );
+  },
+  create: (productId: string, data: { rating: number; title?: string; comment?: string }) =>
+    api<{ review: Review; message: string }>(`/api/products/${productId}/reviews`, {
+      method: "POST",
+      body: data,
+    }),
+};
+
+// ─── Homepage ───
+
+export const homepageApi = {
+  getSections: () => api<{ sections: HomepageSection[] }>("/api/homepage/sections"),
+};
+
+// ─── Cart ───
+
 export const cartApi = {
   get: () => api<CartResponse>("/api/cart"),
-  addItem: (data: AddToCartData) =>
+  addItem: (data: { productId: string; variantId?: string; quantity?: number }) =>
     api<{ message: string }>("/api/cart/add", { method: "POST", body: data }),
-  updateItem: (itemId: string, data: { selectedSizes?: Record<string, string>; quantity?: number }) =>
+  updateItem: (itemId: string, data: { quantity: number }) =>
     api<{ item: CartItem; message: string }>(`/api/cart/${itemId}`, { method: "PATCH", body: data }),
   removeItem: (itemId: string) =>
     api<{ message: string }>(`/api/cart/${itemId}`, { method: "DELETE" }),
 };
+
+// ─── Checkout ───
+
 export const checkoutApi = {
   init: (data: CheckoutInitData) =>
     api<{ checkoutSession: CheckoutSession }>("/api/checkout/init", { method: "POST", body: data }),
@@ -106,6 +198,9 @@ export const checkoutApi = {
   verify: (data: VerifyPaymentData) =>
     api<{ message: string; order: Order }>("/api/checkout/verify", { method: "POST", body: data }),
 };
+
+// ─── Account ───
+
 export const accountApi = {
   getProfile: () => api<{ user: User }>("/api/account/profile"),
   updateProfile: (data: { name?: string; phone?: string }) =>
@@ -127,10 +222,11 @@ export const accountApi = {
   },
   getOrder: (id: string) => api<{ order: OrderDetail }>(`/api/account/orders/${id}`),
 };
+
+// ─── Landing ───
+
 export const landingApi = {
   getHero: () => api<{ heroContent: HeroContent[] }>("/api/landing/hero"),
-  getTopFits: () => api<{ topFits: TopFits }>("/api/landing/top-fits"),
-  getReels: () => api<{ reels: Reel[] }>("/api/landing/reels"),
   getReviews: (params?: { featured?: boolean; limit?: number }) => {
     const searchParams = new URLSearchParams();
     if (params?.featured !== undefined) searchParams.set("featured", String(params.featured));
@@ -139,6 +235,9 @@ export const landingApi = {
     return api<{ reviews: Review[]; stats: ReviewStats }>(`/api/landing/reviews${query ? `?${query}` : ""}`);
   },
 };
+
+// ─── Types ───
+
 export interface User {
   id: string;
   email: string;
@@ -147,59 +246,118 @@ export interface User {
   role: "USER" | "ADMIN";
   createdAt?: string;
 }
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string | null;
+  image?: string | null;
+  showInNav: boolean;
+  position: number;
+  isActive: boolean;
+  parentId?: string | null;
+  parent?: { id: string; name: string; slug: string } | null;
+  children?: Category[];
+  _count?: { products: number };
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string | null;
+  isActive: boolean;
+}
+
+export interface ProductSpecification {
+  key: string;
+  value: string;
+}
+
+export interface ProductOption {
+  id: string;
+  name: string;
+  position: number;
+  values: ProductOptionValue[];
+}
+
+export interface ProductOptionValue {
+  id: string;
+  value: string;
+  position: number;
+}
+
+export interface ProductVariant {
+  id: string;
+  sku?: string | null;
+  price: number;
+  comparePrice?: number | null;
+  stock: number;
+  images: string[];
+  optionValues: { optionName: string; valueName: string }[];
+  isActive: boolean;
+  position: number;
+}
+
 export interface Product {
   id: string;
   title: string;
   slug: string;
-  category: string;
-  description?: string;
+  description?: string | null;
   basePrice: number;
+  comparePrice?: number | null;
   images: string[];
-  sizeChart?: Record<string, Record<string, number>>;
-  availableSizes: string[];
-  stockPerSize: Record<string, number>;
-  isActive: boolean;
-}
-export interface Outfit {
-  id: string;
-  title: string;
-  slug: string;
-  genderType: "GENTLEMEN" | "LADY" | "COUPLE";
-  description?: string;
-  heroImages: string[];
-  bundlePrice: number;
+  stock: number;
+  sku?: string | null;
+  specifications?: ProductSpecification[] | unknown | null;
+  hasVariants?: boolean;
+  options?: ProductOption[];
+  variants?: ProductVariant[];
   isFeatured: boolean;
   isActive: boolean;
-  productCount: number;
-  products: Product[];
+  categoryId?: string | null;
+  brandId?: string | null;
+  category?: { id: string; name: string | null; slug: string | null } | Category | null;
+  brand?: { id: string; name: string | null; slug: string | null } | Brand | null;
+  reviewStats?: ReviewStats;
 }
-export interface OutfitDetail extends Outfit {
-  individualTotal: number;
-  savings: number;
-  createdAt: string;
+
+export interface Deal {
+  id: string;
+  productId: string;
+  dealPrice: number;
+  startsAt: string | Date;
+  endsAt: string | Date;
+  isActive: boolean;
+  position: number;
+  product: Product;
 }
+
+export interface HomepageSection {
+  id: string;
+  type: string;
+  title: string;
+  config?: Record<string, unknown> | null;
+  position: number;
+  isActive: boolean;
+}
+
 export interface CartItem {
   id: string;
-  type: "outfit" | "product";
-  outfit?: Outfit;
-  product?: Product;
-  selectedSizes: Record<string, string>;
+  product: Product;
+  variant?: ProductVariant | null;
   quantity: number;
   price: number;
 }
+
 export interface CartResponse {
   cart: { id: string; userId?: string; sessionId?: string } | null;
   items: CartItem[];
   subtotal: number;
   itemCount: number;
 }
-export interface AddToCartData {
-  outfitId?: string;
-  productId?: string;
-  selectedSizes: Record<string, string>;
-  quantity?: number;
-  isBundle?: boolean;
-}
+
 export interface Address {
   id: string;
   name: string;
@@ -212,6 +370,7 @@ export interface Address {
   country: string;
   isDefault: boolean;
 }
+
 export interface AddressInput {
   name: string;
   email: string;
@@ -222,18 +381,18 @@ export interface AddressInput {
   pincode: string;
   isDefault?: boolean;
 }
+
 export interface CheckoutInitData {
   address?: AddressInput;
   savedAddressId?: string;
 }
+
 export interface CheckoutSession {
   cartId: string;
   address: AddressInput;
   items: Array<{
     id: string;
-    type: string;
     title: string;
-    selectedSizes: Record<string, string>;
     quantity: number;
     price: number;
   }>;
@@ -243,6 +402,7 @@ export interface CheckoutSession {
   total: number;
   requiresOtp: boolean;
 }
+
 export interface Coupon {
   id: string;
   code: string;
@@ -255,6 +415,7 @@ export interface Coupon {
   expiresAt?: string | null;
   isActive: boolean;
 }
+
 export interface CreatePaymentData {
   cartId: string;
   address: AddressInput;
@@ -264,6 +425,7 @@ export interface CreatePaymentData {
   discount: number;
   total: number;
 }
+
 export interface PaymentResponse {
   razorpayOrderId: string;
   razorpayKeyId: string;
@@ -272,12 +434,14 @@ export interface PaymentResponse {
   orderNumber: string;
   checkoutData: Record<string, unknown>;
 }
+
 export interface VerifyPaymentData {
   razorpayOrderId: string;
   razorpayPaymentId: string;
   razorpaySignature: string;
   checkoutData: Record<string, unknown>;
 }
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -291,27 +455,32 @@ export interface Order {
   items: OrderItem[];
   user?: User;
 }
+
 export interface OrderItem {
   id: string;
   productTitle: string;
-  outfitTitle?: string;
-  size: string;
+  size?: string | null;
+  variantSnapshot?: { sku?: string; optionValues: { optionName: string; valueName: string }[] } | null;
+  productImage?: string | null;
   quantity: number;
   price: number;
   product: Product;
 }
+
 export interface OrderDetail extends Order {
   paymentId?: string;
   paymentMethod?: string;
   addressSnapshot: AddressInput;
   coupon?: Coupon;
 }
+
 export interface Pagination {
   page: number;
   limit: number;
   totalCount: number;
   totalPages: number;
 }
+
 export interface HeroContent {
   id: string;
   title: string;
@@ -323,42 +492,26 @@ export interface HeroContent {
   position: number;
   createdAt: Date | string;
 }
-export interface TopFits {
-  gentlemen: OutfitCard[];
-  lady: OutfitCard[];
-  couple: OutfitCard[];
-}
-export interface OutfitCard {
-  id: string;
-  title: string;
-  slug: string;
-  heroImage: string;
-  bundlePrice: number;
-  individualTotal: number;
-  savings: number;
-  productCount: number;
-}
-export interface Reel {
-  id: string;
-  videoUrl: string;
-  thumbnail?: string | null;
-  title?: string | null;
-  outfitId?: string | null;
-  isActive: boolean;
-  position: number;
-  createdAt: Date | string;
-  outfit?: { id: string; title: string; slug: string; bundlePrice: number };
-}
+
 export interface Review {
   id: string;
+  productId: string;
+  userId: string;
   userName: string;
+  title?: string | null;
   rating: number;
-  comment?: string;
+  comment?: string | null;
   media: string[];
+  adminReply?: string | null;
+  isFeatured: boolean;
+  isApproved: boolean;
   createdAt: string;
 }
+
 export interface ReviewStats {
   averageRating: number;
   totalReviews: number;
+  ratingDistribution?: Record<string, number>;
 }
+
 export default api;

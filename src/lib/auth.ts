@@ -19,15 +19,6 @@ export async function generateToken(payload: JWTPayload): Promise<string> {
     .sign(secret);
 }
 
-export async function verifyAuthToken(token: string): Promise<JWTPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    return payload as unknown as JWTPayload;
-  } catch {
-    return null;
-  }
-}
-
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secret);

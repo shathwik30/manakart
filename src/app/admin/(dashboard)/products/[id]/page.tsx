@@ -33,7 +33,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="animate-spin text-gold-500" size={32} />
+        <Loader2 className="animate-spin text-green-600" size={32} />
       </div>
     );
   }

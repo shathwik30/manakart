@@ -56,12 +56,12 @@ export default function AdminCoupons() {
     <div>
        <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-serif text-[#1A1A1A] mb-2">Coupons</h1>
-          <p className="text-[#8C7B75] text-sm">Manage discount codes</p>
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Coupons</h1>
+          <p className="text-gray-500 text-sm">Manage discount codes</p>
         </div>
         <button
           onClick={handleCreate}
-          className="flex items-center gap-2 bg-[#1A1A1A] text-[#FAF6F0] px-4 py-2 rounded hover:bg-[#2C2C2C] transition-colors"
+          className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
         >
           <Plus size={18} />
           <span>Create Coupon</span>
@@ -70,46 +70,46 @@ export default function AdminCoupons() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
            <div className="col-span-full flex justify-center py-12">
-              <Loader2 className="animate-spin text-[#C9A227]" size={30} />
+              <Loader2 className="animate-spin text-green-600" size={30} />
            </div>
         ) : coupons.length === 0 ? (
-           <div className="col-span-full bg-white p-12 text-center border border-[#E0E0E0] rounded-lg">
-              <p className="text-[#888]">No coupons found.</p>
+           <div className="col-span-full bg-white p-12 text-center border border-gray-200 rounded-lg">
+              <p className="text-gray-500">No coupons found.</p>
            </div>
         ) : (
             coupons.map((coupon) => (
-                <div key={coupon.id} className="bg-white p-6 rounded-lg shadow-sm border border-[#E0E0E0] relative group">
+                <div key={coupon.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 relative group">
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-2">
-                            <Tag size={20} className="text-[#C9A227]" />
-                            <span className="font-mono font-bold text-lg text-[#1A1A1A] tracking-wider">{coupon.code}</span>
-                            <button onClick={() => copyCode(coupon.code)} className="text-[#AAA] hover:text-[#555]">
+                            <Tag size={20} className="text-green-600" />
+                            <span className="font-mono font-semibold text-lg text-gray-900 tracking-wider">{coupon.code}</span>
+                            <button onClick={() => copyCode(coupon.code)} className="text-gray-400 hover:text-gray-600">
                                 <Copy size={14} />
                             </button>
                         </div>
                         <div className="flex gap-2">
-                             <button 
+                             <button
                                 onClick={() => handleEdit(coupon)}
-                                className="text-[#AAA] hover:text-[#1A1A1A] opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="text-gray-400 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                                 <Pencil size={18} />
                             </button>
-                             <button 
+                             <button
                                 onClick={() => handleDelete(coupon.id)}
-                                className="text-[#AAA] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                                 <Trash2 size={18} />
                             </button>
                         </div>
                     </div>
                     <div className="flex items-baseline gap-1 mb-2">
-                        <span className="text-3xl font-bold text-[#1A1A1A]">
+                        <span className="text-3xl font-semibold text-gray-900">
                             {coupon.discountType === "FLAT" ? formatPrice(coupon.value) : `${coupon.value}%`}
                         </span>
-                        <span className="text-sm text-[#888] uppercase">OFF</span>
+                        <span className="text-sm text-gray-500 uppercase">OFF</span>
                     </div>
                     <div className="flex gap-2">
-                         <div className="text-xs text-[#8C7B75] bg-[#FAF6F0] inline-block px-2 py-1 rounded">
+                         <div className="text-xs text-gray-500 bg-gray-50 inline-block px-2 py-1 rounded">
                             {coupon.discountType} DISCOUNT
                         </div>
                          {!coupon.isActive && (

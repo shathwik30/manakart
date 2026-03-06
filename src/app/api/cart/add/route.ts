@@ -1,141 +1,128 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { carts, cartItems, products, productVariants, users } from "@/db/schema";
+import { eq, and, isNull } from "drizzle-orm";
+import { getCurrentUser } from "@/lib/auth";
+import { successResponse, errorResponse, generateSessionId } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/auth'
-import { successResponse, errorResponse, generateSessionId } from '@/lib/utils'
-import { logger } from '@/lib/logger'
 export async function POST(request: NextRequest) {
   try {
-    const currentUser = await getCurrentUser()
-    let sessionId = request.cookies.get('session_id')?.value
-    const body = await request.json()
-    const { outfitId, productId, selectedSizes, quantity = 1, isBundle = false } = body
-    if (!outfitId && !productId) {
-      return errorResponse('Either outfitId or productId is required', 400)
+    let currentUser = await getCurrentUser();
+    let sessionId = request.cookies.get("session_id")?.value || null;
+
+    // Verify user still exists in DB (token may reference a deleted user after re-seed)
+    if (currentUser) {
+      const dbUser = await db.query.users.findFirst({ where: eq(users.id, currentUser.userId) });
+      if (!dbUser) currentUser = null;
     }
-    if (!selectedSizes || typeof selectedSizes !== 'object') {
-      return errorResponse('Selected sizes are required', 400)
+
+    const body = await request.json();
+    const { productId, variantId, quantity = 1 } = body;
+
+    if (!productId) {
+      return errorResponse("productId is required", 400);
     }
-    let priceSnapshot = 0
-    if (isBundle && outfitId) {
-      const outfit = await prisma.outfit.findUnique({
-        where: { id: outfitId, isActive: true },
-        include: {
-          items: {
-            select: {
-              product: {
-                select: { id: true, availableSizes: true, stockPerSize: true },
-              },
-            },
-          },
-        },
-      })
-      if (!outfit) {
-        return errorResponse('Outfit not found', 404)
-      }
-      for (const item of outfit.items) {
-        const size = selectedSizes[item.product.id]
-        if (!size) {
-          return errorResponse(`Size required for all products in outfit`, 400)
-        }
-        if (!item.product.availableSizes.includes(size)) {
-          return errorResponse(`Invalid size for product`, 400)
-        }
-        const stock = item.product.stockPerSize as Record<string, number>
-        if (!stock[size] || stock[size] < quantity) {
-          return errorResponse(`Insufficient stock for selected size`, 400)
-        }
-      }
-      priceSnapshot = outfit.bundlePrice
+
+    const product = await db.query.products.findFirst({
+      where: and(eq(products.id, productId), eq(products.isActive, true), isNull(products.deletedAt)),
+    });
+
+    if (!product) {
+      return errorResponse("Product not found", 404);
     }
-    if (!isBundle && productId) {
-      const product = await prisma.product.findFirst({
-        where: { id: productId, isActive: true, deletedAt: null },
-      })
-      if (!product) {
-        return errorResponse('Product not found', 404)
+
+    // Variant validation
+    let variant = null;
+    let priceSnapshot = product.basePrice;
+    let stockToCheck = product.stock;
+
+    if (product.hasVariants) {
+      if (!variantId) {
+        return errorResponse("Please select a variant", 400);
       }
-      const size = selectedSizes.size
-      if (!size) {
-        return errorResponse('Size is required', 400)
+      variant = await db.query.productVariants.findFirst({
+        where: and(eq(productVariants.id, variantId), eq(productVariants.productId, productId)),
+      });
+      if (!variant || !variant.isActive) {
+        return errorResponse("Variant not found or unavailable", 404);
       }
-      if (!product.availableSizes.includes(size)) {
-        return errorResponse('Invalid size selected', 400)
-      }
-      const stock = product.stockPerSize as Record<string, number>
-      if (!stock[size] || stock[size] < quantity) {
-        return errorResponse('Insufficient stock for selected size', 400)
-      }
-      priceSnapshot = product.basePrice
+      priceSnapshot = variant.price;
+      stockToCheck = variant.stock;
     }
-    let cart = await prisma.cart.findFirst({
-      where: currentUser
-        ? { userId: currentUser.userId }
-        : sessionId
-          ? { sessionId }
-          : { id: 'none' }, 
-    })
+
+    if (stockToCheck < quantity) {
+      return errorResponse("Insufficient stock", 400);
+    }
+
+    let cart = currentUser
+      ? await db.query.carts.findFirst({ where: eq(carts.userId, currentUser.userId) })
+      : sessionId
+        ? await db.query.carts.findFirst({ where: eq(carts.sessionId, sessionId) })
+        : null;
+
     if (!currentUser && !sessionId) {
-      sessionId = generateSessionId()
+      sessionId = generateSessionId();
     }
+
     if (!cart) {
-      cart = await prisma.cart.create({
-        data: {
+      try {
+        const [newCart] = await db.insert(carts).values({
           userId: currentUser?.userId || null,
-          sessionId: currentUser ? null : sessionId,
-        },
-      })
+          sessionId: currentUser ? null : (sessionId || null),
+        }).returning();
+        cart = newCart;
+      } catch {
+        // Unique constraint — cart was created concurrently, re-fetch
+        cart = currentUser
+          ? await db.query.carts.findFirst({ where: eq(carts.userId, currentUser.userId) })
+          : sessionId
+            ? await db.query.carts.findFirst({ where: eq(carts.sessionId, sessionId) })
+            : null;
+        if (!cart) return errorResponse("Failed to create cart", 500);
+      }
     }
-    const existingItem = await prisma.cartItem.findFirst({
-      where: {
-        cartId: cart.id,
-        outfitId: isBundle ? outfitId : null,
-        productId: !isBundle ? productId : null,
-        isBundle,
-      },
-    })
+
+    // Look up existing item by (cartId, productId, variantId)
+    const allCartItems = await db.query.cartItems.findMany({
+      where: and(eq(cartItems.cartId, cart.id), eq(cartItems.productId, productId)),
+    });
+    const existingItem = allCartItems.find((item) =>
+      (item.variantId || null) === (variantId || null)
+    );
+
     if (existingItem) {
-      await prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: {
-          quantity: existingItem.quantity + quantity,
-          selectedSizes,
-        },
-      })
+      await db.update(cartItems).set({ quantity: existingItem.quantity + quantity }).where(eq(cartItems.id, existingItem.id));
     } else {
-      await prisma.cartItem.create({
-        data: {
-          cartId: cart.id,
-          outfitId: isBundle ? outfitId : null,
-          productId: !isBundle ? productId : null,
-          selectedSizes,
-          quantity,
-          isBundle,
-          priceSnapshot,
-        },
-      })
+      await db.insert(cartItems).values({
+        cartId: cart.id,
+        productId,
+        variantId: variantId || null,
+        quantity,
+        priceSnapshot,
+      });
     }
-    await prisma.cart.update({
-      where: { id: cart.id },
-      data: { updatedAt: new Date() },
-    })
+
+    await db.update(carts).set({ updatedAt: new Date() }).where(eq(carts.id, cart.id));
+
     const response = NextResponse.json(
-      { success: true, data: { message: 'Item added to cart' } },
+      { success: true, data: { message: "Item added to cart" } },
       { status: 200 }
-    )
+    );
+
     if (!currentUser && sessionId) {
-      response.cookies.set('session_id', sessionId, {
+      response.cookies.set("session_id", sessionId, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30, 
-        path: '/',
-      })
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 30,
+        path: "/",
+      });
     }
-    return response
+
+    return response;
   } catch (error) {
-    logger.error('Add to cart error', { error: error instanceof Error ? error.message : 'Unknown error' })
-    return errorResponse('Something went wrong', 500)
+    logger.error("Add to cart error", { error: error instanceof Error ? error.message : "Unknown error" });
+    return errorResponse("Something went wrong", 500);
   }
 }
-

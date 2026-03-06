@@ -1,6 +1,7 @@
-
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
+
 export async function GET() {
   const healthCheck = {
     status: "ok",
@@ -10,7 +11,7 @@ export async function GET() {
     checks: { database: "unknown" },
   };
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await db.execute(sql`SELECT 1`);
     healthCheck.checks.database = "ok";
   } catch (error) {
     healthCheck.status = "error";
@@ -20,12 +21,12 @@ export async function GET() {
   }
   return NextResponse.json(healthCheck, { status: 200 });
 }
+
 export async function HEAD() {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await db.execute(sql`SELECT 1`);
     return new NextResponse(null, { status: 200 });
   } catch {
     return new NextResponse(null, { status: 503 });
   }
 }
-

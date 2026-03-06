@@ -19,7 +19,7 @@ export function Skeleton({
   return (
     <div
       className={cn(
-        "animate-pulse bg-gradient-to-r from-charcoal-100 via-charcoal-50 to-charcoal-100 bg-[length:200%_100%]",
+        "animate-pulse bg-gray-100",
         variants[variant],
         className
       )}
@@ -32,20 +32,21 @@ export function Skeleton({
 }
 export function ProductCardSkeleton() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="aspect-portrait w-full" />
-      <div className="space-y-2">
+    <div className="bg-white p-3 rounded-xl">
+      <Skeleton className="aspect-square w-full rounded-lg" />
+      <div className="mt-3 space-y-2">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-5 w-1/3" />
       </div>
     </div>
   );
 }
-export function OutfitCardSkeleton() {
+export function DealCardSkeleton() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
-      <div className="space-y-2">
+    <div className="bg-white p-3 rounded-xl">
+      <Skeleton className="aspect-square w-full rounded-lg" />
+      <div className="mt-3 space-y-2">
         <Skeleton className="h-5 w-2/3" />
         <Skeleton className="h-4 w-1/3" />
       </div>

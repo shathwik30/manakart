@@ -1,14 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  serverExternalPackages: ["@prisma/client", "@prisma/adapter-neon"],
   images: {
     minimumCacheTTL: 60 * 60 * 24 * 7,
     remotePatterns: [
+      // Allow all HTTPS hosts — needed for user-uploaded images from arbitrary sources
       { protocol: "https", hostname: "**" },
     ],
   },

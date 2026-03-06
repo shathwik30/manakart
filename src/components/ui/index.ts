@@ -8,6 +8,4 @@ export * from "./Select";
 export * from "./Divider";
 export * from "./Avatar";
 export * from "./Rating";
-export * from "./PageTransition";
-export * from "./ScrollReveal";
-export * from "./LuxuryLoader";
+export * from "./Loader";

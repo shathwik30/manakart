@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { cartApi, CartItem, CartResponse } from "@/lib/api";
 import toast from "react-hot-toast";
+
 interface CartState {
   items: CartItem[];
   cartId: string | null;
@@ -9,22 +10,14 @@ interface CartState {
   isLoading: boolean;
   isOpen: boolean;
   fetchCart: () => Promise<void>;
-  addItem: (data: {
-    outfitId?: string;
-    productId?: string;
-    selectedSizes: Record<string, string>;
-    quantity?: number;
-    isBundle?: boolean;
-  }) => Promise<void>;
-  updateItem: (
-    itemId: string,
-    data: { selectedSizes?: Record<string, string>; quantity?: number }
-  ) => Promise<void>;
+  addItem: (data: { productId: string; variantId?: string; quantity?: number }) => Promise<void>;
+  updateItem: (itemId: string, data: { quantity: number }) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
 }
+
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   cartId: null,
@@ -52,7 +45,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ isLoading: true });
       await cartApi.addItem(data);
       await get().fetchCart();
-      toast.success("Added to bag");
+      toast.success("Added to cart");
       set({ isOpen: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to add item");

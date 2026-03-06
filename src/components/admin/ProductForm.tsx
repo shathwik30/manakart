@@ -1,106 +1,123 @@
 "use client";
-import { useState } from "react";
-import { Product } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { Product, ProductOption, ProductVariant } from "@/lib/api";
 import { adminApi } from "@/lib/adminApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { Loader2, X, Plus, Link as LinkIcon } from "lucide-react";
+import { Loader2, X, Plus, Link as LinkIcon, Trash2, AlertTriangle } from "lucide-react";
 import Image from "next/image";
+
 interface ProductFormProps {
   initialData?: Product;
   isEdit?: boolean;
 }
+
+interface SpecItem {
+  key: string;
+  value: string;
+}
+
+interface CategoryOption {
+  id: string;
+  name: string;
+}
+
+interface BrandOption {
+  id: string;
+  name: string;
+}
+
+interface OptionDraft {
+  name: string;
+  values: string[];
+}
+
+interface VariantDraft {
+  optionValues: { optionName: string; valueName: string }[];
+  price: number;
+  comparePrice: number;
+  stock: number;
+  sku: string;
+  isActive: boolean;
+}
+
 export default function ProductForm({ initialData, isEdit = false }: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const capitalizeCategory = (cat: string) => {
-    if (!cat) return "";
-    return cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
-  };
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [brands, setBrands] = useState<BrandOption[]>([]);
+
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
-    category: initialData?.category ? capitalizeCategory(initialData.category) : "",
+    categoryId: initialData?.categoryId || "",
+    brandId: initialData?.brandId || "",
     description: initialData?.description || "",
     basePrice: initialData?.basePrice ? initialData.basePrice / 100 : 0,
+    comparePrice: initialData?.comparePrice ? initialData.comparePrice / 100 : 0,
+    stock: initialData?.stock ?? 0,
+    sku: initialData?.sku || "",
     isActive: initialData?.isActive ?? true,
-    availableSizes: initialData?.availableSizes || [],
-    stockPerSize: initialData?.stockPerSize || {},
+    isFeatured: initialData?.isFeatured ?? false,
   });
+
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [newImageUrl, setNewImageUrl] = useState("");
-  const [newSize, setNewSize] = useState("");
-  const [sizeType, setSizeType] = useState<"clothing" | "numeric" | "onesize" | "custom">(
-    initialData?.availableSizes?.length
-      ? (initialData.availableSizes.includes("ONE SIZE") ? "onesize" :
-         initialData.availableSizes.every((s: string) => /^\d+$/.test(s)) ? "numeric" :
-         initialData.availableSizes.every((s: string) => /^[SMLX]+$/.test(s)) ? "clothing" : "custom")
-      : "clothing"
+  const [specifications, setSpecifications] = useState<SpecItem[]>(
+    (initialData?.specifications as SpecItem[]) || [{ key: "", value: "" }]
   );
+
+  // Variant state
+  const [hasVariants, setHasVariants] = useState(initialData?.hasVariants ?? false);
+  const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>(() => {
+    if (initialData?.options && initialData.options.length > 0) {
+      return initialData.options.map((opt) => ({
+        name: opt.name,
+        values: opt.values.map((v) => v.value),
+      }));
+    }
+    return [];
+  });
+  const [variantDrafts, setVariantDrafts] = useState<VariantDraft[]>(() => {
+    if (initialData?.variants && initialData.variants.length > 0) {
+      return initialData.variants.map((v) => ({
+        optionValues: v.optionValues,
+        price: v.price / 100,
+        comparePrice: v.comparePrice ? v.comparePrice / 100 : 0,
+        stock: v.stock,
+        sku: v.sku || "",
+        isActive: v.isActive,
+      }));
+    }
+    return [];
+  });
+  const [newOptionValueInput, setNewOptionValueInput] = useState<Record<number, string>>({});
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkStock, setBulkStock] = useState("");
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [catData, brandData] = await Promise.all([
+          adminApi.getCategories(),
+          adminApi.getBrands(),
+        ]);
+        setCategories(catData.categories || []);
+        setBrands(brandData.brands || []);
+      } catch {
+        // silent
+      }
+    };
+    fetchOptions();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) : value,
+      [name]: type === "number" ? parseFloat(value) || 0 : value,
     }));
   };
-  const handleStockChange = (size: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      stockPerSize: {
-        ...prev.stockPerSize,
-        [size]: parseInt(value) || 0,
-      },
-    }));
-  };
-  const handleSizeTypeChange = (type: "clothing" | "numeric" | "onesize" | "custom") => {
-    setSizeType(type);
-    let newSizes: string[] = [];
-    let newStock: Record<string, number> = {};
-    if (type === "clothing") {
-      newSizes = ["S", "M", "L", "XL"];
-      newSizes.forEach(size => { newStock[size] = 10; });
-    } else if (type === "numeric") {
-      newSizes = ["28", "30", "32", "34", "36"];
-      newSizes.forEach(size => { newStock[size] = 10; });
-    } else if (type === "onesize") {
-      newSizes = ["ONE SIZE"];
-      newStock["ONE SIZE"] = 50;
-    }
-    setFormData(prev => ({
-      ...prev,
-      availableSizes: newSizes,
-      stockPerSize: newStock,
-    }));
-  };
-  const addCustomSize = () => {
-    const size = newSize.trim().toUpperCase();
-    if (!size) {
-      toast.error("Please enter a size");
-      return;
-    }
-    if (formData.availableSizes.includes(size)) {
-      toast.error("Size already exists");
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      availableSizes: [...prev.availableSizes, size],
-      stockPerSize: { ...prev.stockPerSize, [size]: 10 },
-    }));
-    setNewSize("");
-    toast.success(`Size ${size} added`);
-  };
-  const removeSize = (size: string) => {
-    setFormData(prev => {
-      const newStock = { ...prev.stockPerSize };
-      delete newStock[size];
-      return {
-        ...prev,
-        availableSizes: prev.availableSizes.filter(s => s !== size),
-        stockPerSize: newStock,
-      };
-    });
-  };
+
   const addImageUrl = () => {
     const url = newImageUrl.trim();
     if (!url) {
@@ -108,38 +125,203 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       return;
     }
     if (!url.match(/^https?:\/\/.+/i)) {
-      toast.error("Please enter a valid URL (starting with http:// or https://)");
+      toast.error("Please enter a valid URL");
       return;
     }
     setImages((prev) => [...prev, url]);
     setNewImageUrl("");
-    toast.success("Image URL added");
   };
+
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const addSpec = () => {
+    setSpecifications((prev) => [...prev, { key: "", value: "" }]);
+  };
+
+  const updateSpec = (index: number, field: "key" | "value", val: string) => {
+    setSpecifications((prev) =>
+      prev.map((s, i) => (i === index ? { ...s, [field]: val } : s))
+    );
+  };
+
+  const removeSpec = (index: number) => {
+    setSpecifications((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // ─── Variant helpers ───
+
+  const addOption = () => {
+    setOptionDrafts((prev) => [...prev, { name: "", values: [] }]);
+  };
+
+  const removeOption = (index: number) => {
+    setOptionDrafts((prev) => prev.filter((_, i) => i !== index));
+    setVariantDrafts([]);
+  };
+
+  const updateOptionName = (index: number, name: string) => {
+    setOptionDrafts((prev) =>
+      prev.map((o, i) => (i === index ? { ...o, name } : o))
+    );
+  };
+
+  const addOptionValue = (optIndex: number) => {
+    const val = (newOptionValueInput[optIndex] || "").trim();
+    if (!val) return;
+    setOptionDrafts((prev) =>
+      prev.map((o, i) =>
+        i === optIndex && !o.values.includes(val)
+          ? { ...o, values: [...o.values, val] }
+          : o
+      )
+    );
+    setNewOptionValueInput((prev) => ({ ...prev, [optIndex]: "" }));
+  };
+
+  const removeOptionValue = (optIndex: number, valIndex: number) => {
+    setOptionDrafts((prev) =>
+      prev.map((o, i) =>
+        i === optIndex ? { ...o, values: o.values.filter((_, vi) => vi !== valIndex) } : o
+      )
+    );
+    setVariantDrafts([]);
+  };
+
+  const generateVariants = () => {
+    const validOptions = optionDrafts.filter((o) => o.name.trim() && o.values.length > 0);
+    if (validOptions.length === 0) {
+      toast.error("Add at least one option with values");
+      return;
+    }
+
+    // Cartesian product
+    const combinations: { optionName: string; valueName: string }[][] = validOptions.reduce<
+      { optionName: string; valueName: string }[][]
+    >(
+      (acc, opt) => {
+        if (acc.length === 0) {
+          return opt.values.map((v) => [{ optionName: opt.name, valueName: v }]);
+        }
+        const result: { optionName: string; valueName: string }[][] = [];
+        for (const existing of acc) {
+          for (const v of opt.values) {
+            result.push([...existing, { optionName: opt.name, valueName: v }]);
+          }
+        }
+        return result;
+      },
+      []
+    );
+
+    if (combinations.length > 100) {
+      toast.error(`Too many variants (${combinations.length}). Max 100 combinations.`);
+      return;
+    }
+
+    // Preserve existing variant data where option values match
+    const newVariants: VariantDraft[] = combinations.map((combo) => {
+      const existingMatch = variantDrafts.find((vd) =>
+        vd.optionValues.length === combo.length &&
+        vd.optionValues.every((ov) =>
+          combo.some((c) => c.optionName === ov.optionName && c.valueName === ov.valueName)
+        )
+      );
+      if (existingMatch) {
+        return { ...existingMatch, optionValues: combo };
+      }
+      return {
+        optionValues: combo,
+        price: formData.basePrice || 0,
+        comparePrice: formData.comparePrice || 0,
+        stock: 0,
+        sku: "",
+        isActive: true,
+      };
+    });
+
+    setVariantDrafts(newVariants);
+    toast.success(`Generated ${newVariants.length} variants`);
+  };
+
+  const updateVariant = (index: number, field: keyof VariantDraft, value: any) => {
+    setVariantDrafts((prev) =>
+      prev.map((v, i) => (i === index ? { ...v, [field]: value } : v))
+    );
+  };
+
+  const applyBulkPrice = () => {
+    const price = parseFloat(bulkPrice);
+    if (!price || price <= 0) return;
+    setVariantDrafts((prev) => prev.map((v) => ({ ...v, price })));
+    setBulkPrice("");
+    toast.success("Applied price to all variants");
+  };
+
+  const applyBulkStock = () => {
+    const stock = parseInt(bulkStock);
+    if (isNaN(stock) || stock < 0) return;
+    setVariantDrafts((prev) => prev.map((v) => ({ ...v, stock })));
+    setBulkStock("");
+    toast.success("Applied stock to all variants");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (images.length === 0) {
-      toast.error("Please add at least one image URL");
+      toast.error("Please add at least one image");
       return;
     }
-    if (formData.availableSizes.length === 0) {
-      toast.error("Please add at least one size option");
+
+    if (hasVariants && variantDrafts.length === 0) {
+      toast.error("Generate variants before saving");
       return;
     }
+
+    if (hasVariants) {
+      const invalidVariants = variantDrafts.filter((v) => v.isActive && v.price <= 0);
+      if (invalidVariants.length > 0) {
+        toast.error("All active variants must have a valid price");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
-      const payload = {
+      const specs = specifications.filter((s) => s.key.trim() && s.value.trim());
+      const payload: any = {
         title: formData.title,
-        category: formData.category,
+        categoryId: formData.categoryId || undefined,
+        brandId: formData.brandId || undefined,
         description: formData.description,
-        basePrice: formData.basePrice * 100, 
+        basePrice: Math.round(formData.basePrice * 100),
+        comparePrice: formData.comparePrice ? Math.round(formData.comparePrice * 100) : undefined,
+        stock: formData.stock,
+        sku: formData.sku || undefined,
         isActive: formData.isActive,
-        stockPerSize: formData.stockPerSize,
-        availableSizes: formData.availableSizes,
-        images: images, 
+        isFeatured: formData.isFeatured,
+        images,
+        specifications: specs,
+        hasVariants,
       };
+
+      if (hasVariants) {
+        payload.options = optionDrafts.filter((o) => o.name.trim()).map((o) => ({
+          name: o.name,
+          values: o.values,
+        }));
+        payload.variants = variantDrafts.map((v) => ({
+          optionValues: v.optionValues,
+          price: Math.round(v.price * 100),
+          comparePrice: v.comparePrice ? Math.round(v.comparePrice * 100) : undefined,
+          stock: v.stock,
+          sku: v.sku || undefined,
+          isActive: v.isActive,
+          images: [],
+        }));
+      }
+
       if (isEdit && initialData) {
         await adminApi.updateProduct(initialData.id, payload);
         toast.success("Product updated successfully");
@@ -155,288 +337,525 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       setLoading(false);
     }
   };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-7xl mx-auto pb-12">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl font-serif text-charcoal-900">
+        <h1 className="text-2xl font-semibold text-gray-900">
           {isEdit ? "Edit Product" : "Create New Product"}
         </h1>
         <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-4 py-2 text-sm text-charcoal-600 hover:bg-cream-50 rounded border border-charcoal-200 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 text-sm bg-charcoal-900 text-cream-100 rounded hover:bg-charcoal-800 transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {loading && <Loader2 className="animate-spin" size={16} />}
-              {isEdit ? "Save Changes" : "Create Product"}
-            </button>
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded border border-gray-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {loading && <Loader2 className="animate-spin" size={16} />}
+            {isEdit ? "Save Changes" : "Create Product"}
+          </button>
         </div>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
+        {/* Left column */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
-            <h2 className="font-medium text-charcoal-900 mb-4">Basic Information</h2>
+          {/* Basic info */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <h2 className="font-semibold text-gray-900 mb-4">Basic Information</h2>
             <div>
-              <label className="block text-sm font-medium text-charcoal-600 mb-1">Product Title</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Product Title</label>
               <input
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
-                placeholder="e.g. Italian Wool Suit"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                placeholder="e.g. Wireless Bluetooth Headphones"
                 required
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-               <div>
-                  <label className="block text-sm font-medium text-charcoal-600 mb-1">Category</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    <option value="Suits">Suits</option>
-                    <option value="Blazers">Blazers</option>
-                    <option value="Trousers">Trousers</option>
-                    <option value="Shirts">Shirts</option>
-                    <option value="Dresses">Dresses</option>
-                    <option value="Shoes">Shoes</option>
-                    <option value="Accessories">Accessories</option>
-                  </select>
-               </div>
-               <div>
-                  <label className="block text-sm font-medium text-charcoal-600 mb-1">Base Price (₹)</label>
-                  <input
-                    name="basePrice"
-                    type="number"
-                    value={formData.basePrice}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
-                    min="0"
-                    required
-                  />
-               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Category</label>
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Brand</label>
+                <select
+                  name="brandId"
+                  value={formData.brandId}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                >
+                  <option value="">Select Brand</option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>{brand.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-charcoal-600 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-4 py-2 bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
                 placeholder="Detailed product description..."
               />
             </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
-              <h2 className="font-medium text-charcoal-900 mb-4">Inventory & Sizes</h2>
-              {}
+
+          {/* Pricing & Inventory */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <h2 className="font-semibold text-gray-900 mb-4">Pricing & Inventory</h2>
+            {hasVariants && variantDrafts.length > 0 && (
+              <p className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded">
+                Price, stock, and SKU are managed per variant below.
+              </p>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium text-charcoal-600 mb-2">Size Type</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSizeTypeChange("clothing")}
-                    className={`px-3 py-2 text-sm rounded border transition-colors ${
-                      sizeType === "clothing"
-                        ? "bg-gold-500 text-white border-gold-500"
-                        : "bg-cream-50 text-charcoal-600 border-charcoal-200 hover:border-gold-500"
-                    }`}
-                  >
-                    S/M/L/XL
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSizeTypeChange("numeric")}
-                    className={`px-3 py-2 text-sm rounded border transition-colors ${
-                      sizeType === "numeric"
-                        ? "bg-gold-500 text-white border-gold-500"
-                        : "bg-cream-50 text-charcoal-600 border-charcoal-200 hover:border-gold-500"
-                    }`}
-                  >
-                    Numeric (28-36)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSizeTypeChange("onesize")}
-                    className={`px-3 py-2 text-sm rounded border transition-colors ${
-                      sizeType === "onesize"
-                        ? "bg-gold-500 text-white border-gold-500"
-                        : "bg-cream-50 text-charcoal-600 border-charcoal-200 hover:border-gold-500"
-                    }`}
-                  >
-                    One Size
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSizeTypeChange("custom")}
-                    className={`px-3 py-2 text-sm rounded border transition-colors ${
-                      sizeType === "custom"
-                        ? "bg-gold-500 text-white border-gold-500"
-                        : "bg-cream-50 text-charcoal-600 border-charcoal-200 hover:border-gold-500"
-                    }`}
-                  >
-                    Custom
-                  </button>
-                </div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Selling Price</label>
+                <input
+                  name="basePrice"
+                  type="number"
+                  value={formData.basePrice}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600 disabled:opacity-50"
+                  min="0"
+                  required={!hasVariants}
+                  disabled={hasVariants && variantDrafts.length > 0}
+                />
               </div>
-              {}
-              {sizeType === "custom" && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-charcoal-600">Add Custom Size</label>
-                  <div className="flex gap-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">MRP (Compare)</label>
+                <input
+                  name="comparePrice"
+                  type="number"
+                  value={formData.comparePrice}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600 disabled:opacity-50"
+                  min="0"
+                  disabled={hasVariants && variantDrafts.length > 0}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Stock</label>
+                <input
+                  name="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600 disabled:opacity-50"
+                  min="0"
+                  required={!hasVariants}
+                  disabled={hasVariants && variantDrafts.length > 0}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">SKU</label>
+                <input
+                  name="sku"
+                  value={formData.sku}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600 disabled:opacity-50"
+                  placeholder="SKU-001"
+                  disabled={hasVariants && variantDrafts.length > 0}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Variants Section */}
+          {hasVariants && (
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-5">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-gray-900">Product Options</h2>
+                <button
+                  type="button"
+                  onClick={addOption}
+                  className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
+                >
+                  <Plus size={14} /> Add Option
+                </button>
+              </div>
+
+              {optionDrafts.length === 0 && (
+                <p className="text-sm text-gray-500">
+                  Add options like Size, Color, Storage to create variants.
+                </p>
+              )}
+
+              {optionDrafts.map((opt, optIdx) => (
+                <div key={optIdx} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div className="flex gap-3 items-center">
                     <input
-                      type="text"
-                      value={newSize}
-                      onChange={(e) => setNewSize(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addCustomSize();
-                        }
-                      }}
-                      placeholder="e.g. 30, XS, etc."
-                      className="flex-1 px-3 py-2 text-sm bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
+                      value={opt.name}
+                      onChange={(e) => updateOptionName(optIdx, e.target.value)}
+                      placeholder="Option name (e.g. Size)"
+                      className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
                     />
                     <button
                       type="button"
-                      onClick={addCustomSize}
-                      className="px-4 py-2 bg-gold-500 text-white rounded hover:bg-gold-600 transition-colors flex items-center gap-1 text-sm"
+                      onClick={() => removeOption(optIdx)}
+                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                     >
-                      <Plus size={16} /> Add
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  {/* Values as chips */}
+                  <div className="flex flex-wrap gap-2">
+                    {opt.values.map((val, valIdx) => (
+                      <span
+                        key={valIdx}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-sm text-gray-700 rounded-full"
+                      >
+                        {val}
+                        <button
+                          type="button"
+                          onClick={() => removeOptionValue(optIdx, valIdx)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Add value input */}
+                  <div className="flex gap-2">
+                    <input
+                      value={newOptionValueInput[optIdx] || ""}
+                      onChange={(e) =>
+                        setNewOptionValueInput((prev) => ({ ...prev, [optIdx]: e.target.value }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addOptionValue(optIdx);
+                        }
+                      }}
+                      placeholder="Type value and press Enter"
+                      className="flex-1 px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addOptionValue(optIdx)}
+                      className="px-3 py-1.5 text-sm text-green-600 border border-green-200 rounded hover:bg-green-50 transition-colors"
+                    >
+                      Add
                     </button>
                   </div>
                 </div>
+              ))}
+
+              {/* Generate variants button */}
+              {optionDrafts.some((o) => o.name.trim() && o.values.length > 0) && (
+                <button
+                  type="button"
+                  onClick={generateVariants}
+                  className="px-4 py-2 text-sm font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Generate Variants
+                </button>
               )}
-              {}
-              {formData.availableSizes.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-charcoal-600 mb-2">Stock per Size</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {formData.availableSizes.map((size) => (
-                      <div key={size} className="relative">
-                        <label className="block text-xs font-medium text-charcoal-500 mb-1 text-center">{size}</label>
+
+              {/* Variants table */}
+              {variantDrafts.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      Variants ({variantDrafts.length})
+                    </h3>
+                    {variantDrafts.length > 100 && (
+                      <span className="flex items-center gap-1 text-xs text-amber-600">
+                        <AlertTriangle size={12} /> Large variant count
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Bulk actions */}
+                  <div className="flex gap-3 items-end flex-wrap">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Set all prices</label>
+                      <div className="flex gap-1">
                         <input
                           type="number"
-                          value={formData.stockPerSize[size] || 0}
-                          onChange={(e) => handleStockChange(size, e.target.value)}
-                          className="w-full px-2 py-1 text-center bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
+                          value={bulkPrice}
+                          onChange={(e) => setBulkPrice(e.target.value)}
+                          placeholder="0"
+                          className="w-24 px-2 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
                           min="0"
                         />
-                        {sizeType === "custom" && (
-                          <button
-                            type="button"
-                            onClick={() => removeSize(size)}
-                            className="absolute -top-1 -right-1 p-0.5 bg-red-500 text-white rounded-full hover:bg-red-600"
-                          >
-                            <X size={12} />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={applyBulkPrice}
+                          className="px-2 py-1.5 text-xs text-green-600 border border-green-200 rounded hover:bg-green-50"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Set all stocks</label>
+                      <div className="flex gap-1">
+                        <input
+                          type="number"
+                          value={bulkStock}
+                          onChange={(e) => setBulkStock(e.target.value)}
+                          placeholder="0"
+                          className="w-24 px-2 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                          min="0"
+                        />
+                        <button
+                          type="button"
+                          onClick={applyBulkStock}
+                          className="px-2 py-1.5 text-xs text-green-600 border border-green-200 rounded hover:bg-green-50"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Table */}
+                  <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="text-left px-3 py-2 font-medium text-gray-600">Variant</th>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600 w-28">Price</th>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600 w-28">Compare</th>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600 w-20">Stock</th>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600 w-28">SKU</th>
+                          <th className="text-center px-3 py-2 font-medium text-gray-600 w-16">Active</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {variantDrafts.map((v, idx) => (
+                          <tr key={idx} className="border-b border-gray-100 last:border-0">
+                            <td className="px-3 py-2">
+                              <div className="flex gap-1 flex-wrap">
+                                {v.optionValues.map((ov, i) => (
+                                  <span key={i} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 rounded">
+                                    {ov.valueName}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                value={v.price}
+                                onChange={(e) => updateVariant(idx, "price", parseFloat(e.target.value) || 0)}
+                                className="w-full px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                                min="0"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                value={v.comparePrice}
+                                onChange={(e) => updateVariant(idx, "comparePrice", parseFloat(e.target.value) || 0)}
+                                className="w-full px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                                min="0"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                value={v.stock}
+                                onChange={(e) => updateVariant(idx, "stock", parseInt(e.target.value) || 0)}
+                                className="w-full px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                                min="0"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                value={v.sku}
+                                onChange={(e) => updateVariant(idx, "sku", e.target.value)}
+                                className="w-full px-2 py-1 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                                placeholder="SKU"
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              <button
+                                type="button"
+                                onClick={() => updateVariant(idx, "isActive", !v.isActive)}
+                                className={`w-8 h-5 rounded-full transition-colors relative ${v.isActive ? 'bg-green-600' : 'bg-gray-300'}`}
+                              >
+                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${v.isActive ? 'left-3.5' : 'left-0.5'}`} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Specifications */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-gray-900">Specifications</h2>
+              <button
+                type="button"
+                onClick={addSpec}
+                className="text-sm text-green-600 hover:text-green-700 flex items-center gap-1"
+              >
+                <Plus size={14} /> Add
+              </button>
+            </div>
+            {specifications.map((spec, idx) => (
+              <div key={idx} className="flex gap-3 items-start">
+                <input
+                  value={spec.key}
+                  onChange={(e) => updateSpec(idx, "key", e.target.value)}
+                  placeholder="e.g. Weight"
+                  className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                />
+                <input
+                  value={spec.value}
+                  onChange={(e) => updateSpec(idx, "value", e.target.value)}
+                  placeholder="e.g. 250g"
+                  className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeSpec(idx)}
+                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+          {/* Status */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <h2 className="font-semibold text-gray-900 mb-2">Status</h2>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Active</span>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
+                className={`w-12 h-6 rounded-full transition-colors relative ${formData.isActive ? 'bg-green-600' : 'bg-gray-300'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.isActive ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Featured</span>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, isFeatured: !prev.isFeatured }))}
+                className={`w-12 h-6 rounded-full transition-colors relative ${formData.isFeatured ? 'bg-green-600' : 'bg-gray-300'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.isFeatured ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Has Variants</span>
+              <button
+                type="button"
+                onClick={() => setHasVariants(!hasVariants)}
+                className={`w-12 h-6 rounded-full transition-colors relative ${hasVariants ? 'bg-green-600' : 'bg-gray-300'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${hasVariants ? 'left-7' : 'left-1'}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Images */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4">
+            <h2 className="font-semibold text-gray-900">Product Images</h2>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-600">Add Image URL</label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addImageUrl();
+                    }
+                  }}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1 px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-green-600"
+                />
+                <button
+                  type="button"
+                  onClick={addImageUrl}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 text-sm"
+                >
+                  <Plus size={16} /> Add
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                <LinkIcon className="inline w-3 h-3 mr-1" />
+                Paste image URL from CDN
+              </p>
+            </div>
+            {images.length > 0 && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-600">
+                  Image Previews ({images.length})
+                </label>
+                <div className="max-h-[600px] overflow-y-auto pr-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    {images.map((img, idx) => (
+                      <div key={idx} className="aspect-square relative rounded overflow-hidden group border border-gray-200">
+                        <Image
+                          src={img}
+                          alt={`Product ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext fill='%231f2937' font-family='sans-serif' font-size='18' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImage Not Found%3C/text%3E%3C/svg%3E";
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        >
+                          <X size={14} />
+                        </button>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
+              </div>
+            )}
           </div>
-        </div>
-        {}
-        <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-           {}
-           <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
-              <h2 className="font-medium text-charcoal-900 mb-2">Status</h2>
-              <div className="flex items-center justify-between">
-                  <span className="text-sm text-charcoal-600">Active</span>
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${formData.isActive ? 'bg-gold-500' : 'bg-gray-300'}`}
-                  >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${formData.isActive ? 'left-7' : 'left-1'}`} />
-                  </button>
-              </div>
-           </div>
-           {}
-           <div className="bg-white p-6 rounded-lg shadow-sm border border-charcoal-200 space-y-4">
-              <h2 className="font-medium text-charcoal-900">Product Images</h2>
-              {}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-charcoal-600">Add Image URL</label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addImageUrl();
-                      }
-                    }}
-                    placeholder="https://example.com/image.jpg"
-                    className="flex-1 px-3 py-2 text-sm bg-cream-50 border border-charcoal-200 rounded focus:outline-none focus:border-gold-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={addImageUrl}
-                    className="px-4 py-2 bg-gold-500 text-white rounded hover:bg-gold-600 transition-colors flex items-center gap-1 text-sm"
-                  >
-                    <Plus size={16} /> Add
-                  </button>
-                </div>
-                <p className="text-xs text-charcoal-500">
-                  <LinkIcon className="inline w-3 h-3 mr-1" />
-                  Paste image URL from CDN (Cloudinary, ImageKit, etc.)
-                </p>
-              </div>
-              {}
-              {images.length > 0 && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-charcoal-600">
-                    Image Previews ({images.length})
-                  </label>
-                  <div className="max-h-[600px] overflow-y-auto pr-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {images.map((img, idx) => (
-                        <div key={idx} className="aspect-[3/4] relative rounded overflow-hidden group border border-charcoal-200">
-                          <Image
-                            src={img}
-                            alt={`Product ${idx + 1}`}
-                            fill
-                            className="object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect fill='%23e5e7eb' width='400' height='400'/%3E%3Ctext fill='%231f2937' font-family='sans-serif' font-size='18' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImage Not Found%3C/text%3E%3C/svg%3E";
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(idx)}
-                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          >
-                            <X size={14} />
-                          </button>
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p className="truncate">{img}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-           </div>
         </div>
       </div>
     </form>

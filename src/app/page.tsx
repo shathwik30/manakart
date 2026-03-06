@@ -1,54 +1,45 @@
 
 import { Header, Footer } from "@/components/layout";
-import {
-  Hero,
-  AboutPreview,
-  Reviews,
-  CategoryShowcase,
-  ReelsSection,
-  Newsletter,
-  HomeWrapper,
-} from "@/components/home";
+import { Hero } from "@/components/home";
+import { DealOfTheDay } from "@/components/home/DealOfTheDay";
+import { ShopByCategory } from "@/components/home/ShopByCategory";
+import { RecommendedProducts } from "@/components/home/RecommendedProducts";
 import { landingService } from "@/lib/services/landing-service";
 
 export const dynamic = 'force-dynamic'
 
 async function getHomePageData() {
   try {
-    const [heroData, reviewsData, reelsData] = await Promise.all([
+    const [heroData, dealsData] = await Promise.all([
       landingService.getHeroContent(),
-      landingService.getReviews({ featured: true, limit: 6 }),
-      landingService.getReels(20),
+      landingService.getActiveDeals(),
     ]);
 
     return {
       hero: heroData?.heroContent || [],
-      reviews: reviewsData?.reviews || [],
-      reviewStats: reviewsData?.stats || { averageRating: 0, totalReviews: 0 },
-      reels: reelsData?.reels || [],
+      deals: dealsData?.deals || [],
     };
   } catch (error) {
     console.error("Error loading home page data:", error);
     return {
       hero: [],
-      reviews: [],
-      reviewStats: { averageRating: 0, totalReviews: 0 },
-      reels: [],
+      deals: [],
     };
   }
 }
+
 export default async function HomePage() {
-  const { hero, reviews, reviewStats, reels } = await getHomePageData();
+  const { hero, deals } = await getHomePageData();
   return (
-    <HomeWrapper>
+    <div className="min-h-screen bg-[#f1f3f6]">
       <Header />
-      <Hero slides={hero} />
-      <CategoryShowcase />
-      <ReelsSection reels={reels} />
-      <AboutPreview />
-      <Reviews reviews={reviews} stats={reviewStats} />
-      <Newsletter />
+      <main>
+        <Hero slides={hero} />
+        <ShopByCategory />
+        <DealOfTheDay deals={deals} />
+        <RecommendedProducts />
+      </main>
       <Footer />
-    </HomeWrapper>
+    </div>
   );
 }

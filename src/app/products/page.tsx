@@ -1,39 +1,33 @@
 
 import { Metadata } from "next";
-import { Header, Footer } from "@/components/layout";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { ProductsGrid } from "@/components/products/ProductsGrid";
 import { productService } from "@/lib/services/product-service";
 import { Product } from "@/lib/api";
 
 export const metadata: Metadata = {
-  title: "All Products",
-  description: "Explore our exquisite collection of luxury fashion pieces.",
+  title: "All Products | ManaKart",
+  description: "Browse our wide range of products at great prices.",
 };
 
 export default async function ProductsPage() {
   let products: Product[] = [];
+  let totalCount = 0;
   try {
-    const data = await productService.getProducts();
+    const data = await productService.getProducts({ limit: 100 });
     products = data.products as unknown as Product[];
+    totalCount = data.pagination.totalCount;
   } catch (error) {
     console.error("Failed to fetch products:", error);
   }
+
   return (
     <>
       <Header />
-      <main className="pt-32 pb-20 bg-cream-100">
-        <div className="container-luxury">
-          <div className="text-center mb-12">
-            <p className="overline text-gold-600 mb-4">Shop</p>
-            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-charcoal-900 mb-6">
-              All Products
-            </h1>
-            <p className="text-charcoal-600 max-w-2xl mx-auto">
-              Discover our complete range of luxury pieces, each crafted with
-              exceptional attention to detail.
-            </p>
-          </div>
-          <ProductsGrid products={products} />
+      <main className="bg-[#f1f3f6] min-h-screen">
+        <div className="max-w-[1280px] mx-auto px-4 py-4">
+          <ProductsGrid products={products} totalCount={totalCount} />
         </div>
       </main>
       <Footer />

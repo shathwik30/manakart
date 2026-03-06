@@ -10,7 +10,7 @@
 - **Frame**: Next.js 16.1.4 (App Router)
 - **Language**: TypeScript (Strict)
 - **Style**: Tailwind CSS 4 + `clsx` + `tailwind-merge`
-- **DB**: Prisma v7.3 + Neon Postgres
+- **DB**: Drizzle ORM (neon-http) + Neon Postgres
 - **State**: Zustand (Store), React Context (Theme/Auth)
 - **Auth**: Custom JWT (JOSE) + Bcrypt
 - **Icons**: Lucide React
@@ -22,7 +22,7 @@
   - `utils.ts`: Global helpers (formatting, validation).
   - `api.ts`: **Client-side** fetch wrapper (`api<T>(url, options)`).
   - `adminApi.ts`: Admin specific SDK.
-  - `prisma.ts`: Singleton DB client.
+  - `../db/index.ts`: Drizzle DB client. `../db/schema.ts`: All tables/enums.
   - `logger.ts`: Server-side logging.
 - **`src/components`**:
   - `ui/`: Reusable primitives (buttons, modals).
@@ -54,13 +54,14 @@
 - `calculateDiscountPercentage(original, discounted)`: Returns rounded %.
 - `storage`: `{ get<T>, set<T>, remove }` (Safe LocalStorage).
 
-## 🗄️ Database Context (`prisma/schema.prisma`)
-**Key Models & Relations:**
-- **Product**: `slug` (unique), `basePrice` (Int), `images` (String[]), `stockPerSize` (Json).
-- **Outfit**: `genderType` (ENUM: GENTLEMEN, LADY, COUPLE), `bundlePrice`, `items` (Relation to OutfitItem).
-- **Cart**: Linked to `User` OR `sessionId` (guest). Contains `CartItem`.
-- **Order**: `orderNumber` (unique), `paymentStatus`, `orderStatus`.
-- **User**: `role` (USER/ADMIN).
+## 🗄️ Database Context (`src/db/schema.ts` — Drizzle ORM)
+**15 tables, 4 enums. Import: `import { db } from "@/db"`, `import { products, ... } from "@/db/schema"`**
+- **Product**: `slug` (unique), `basePrice` (Int/paise), `images` (text[]), `stock`, `categoryId`, `brandId`.
+- **Category**: hierarchical (`parentId` self-ref), `slug`, `showInNav`, `position`.
+- **Brand**: `name`, `slug`, `logo`, `isActive`.
+- **Cart**: Linked to `User` OR `sessionId` (guest). Contains `CartItem` (cartId+productId).
+- **Order**: `orderNumber` (unique), `paymentStatus`, `orderStatus`, `addressSnapshot` (jsonb).
+- **User**: `role` (USER/ADMIN). **Deal**, **Review**, **HeroContent**, **HomepageSection** also present.
 
 ## 📝 Coding Conventions
 

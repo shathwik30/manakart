@@ -79,20 +79,20 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1">Code</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
           <input
             type="text"
             required
             placeholder="e.g. SUMMER20"
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none uppercase"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none uppercase"
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-charcoal-700 mb-1">Status</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
            <select
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={String(formData.isActive)}
             onChange={(e) => setFormData({ ...formData, isActive: e.target.value === "true" })}
           >
@@ -103,9 +103,9 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-           <label className="block text-sm font-medium text-charcoal-700 mb-1">Discount Type</label>
+           <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
            <select
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={formData.discountType}
             onChange={(e) => setFormData({ ...formData, discountType: e.target.value as "FLAT" | "PERCENTAGE" })}
           >
@@ -114,14 +114,14 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
           </select>
         </div>
         <div>
-           <label className="block text-sm font-medium text-charcoal-700 mb-1">Value</label>
+           <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
            <input
             type="number"
             required
             min="0"
             step="0.01"
             placeholder={formData.discountType === "FLAT" ? "Amount in ₹" : "Percentage"}
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={formData.value}
             onChange={(e) => setFormData({ ...formData, value: e.target.value })}
           />
@@ -129,21 +129,21 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-           <label className="block text-sm font-medium text-charcoal-700 mb-1">Min Order Value (Optional)</label>
+           <label className="block text-sm font-medium text-gray-700 mb-1">Min Order Value (Optional)</label>
            <input
             type="number"
             min="0"
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={formData.minOrderValue}
             onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value })}
           />
         </div>
         <div>
-           <label className="block text-sm font-medium text-charcoal-700 mb-1">Max Discount (Optional)</label>
+           <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount (Optional)</label>
            <input
             type="number"
             min="0"
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={formData.maxDiscount}
             onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
           />
@@ -151,37 +151,37 @@ export function CouponForm({ initialData, onSuccess, onCancel }: CouponFormProps
       </div>
       <div className="grid grid-cols-2 gap-4">
          <div>
-           <label className="block text-sm font-medium text-charcoal-700 mb-1">Usage Limit (Optional)</label>
+           <label className="block text-sm font-medium text-gray-700 mb-1">Usage Limit (Optional)</label>
            <input
             type="number"
             min="0"
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={formData.usageLimit}
             onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
           />
         </div>
         <div>
-           <label className="block text-sm font-medium text-charcoal-700 mb-1">Expires At (Optional)</label>
+           <label className="block text-sm font-medium text-gray-700 mb-1">Expires At (Optional)</label>
            <input
             type="date"
-            className="w-full px-3 py-2 border border-charcoal-200 rounded focus:border-gold-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-200 rounded focus:border-green-600 outline-none"
             value={formData.expiresAt}
             onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
           />
         </div>
       </div>
-      <div className="flex justify-end gap-3 pt-4 border-t border-charcoal-100">
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-charcoal-600 hover:bg-charcoal-50 rounded transition-colors"
+          className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-2 bg-charcoal-900 text-gold-500 rounded hover:bg-charcoal-800 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
         >
           {loading && <Loader2 size={16} className="animate-spin" />}
           {initialData ? "Update Coupon" : "Create Coupon"}

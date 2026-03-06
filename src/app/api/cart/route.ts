@@ -1,126 +1,68 @@
+import { NextRequest } from "next/server";
+import { db } from "@/db";
+import { carts, cartItems, products, users } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+import { getCurrentUser } from "@/lib/auth";
+import { successResponse, errorResponse } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
-import { NextRequest } from 'next/server'
-import prisma from '@/lib/prisma'
-import { getCurrentUser } from '@/lib/auth'
-import { successResponse, errorResponse } from '@/lib/utils'
-import { logger } from '@/lib/logger'
 export async function GET(request: NextRequest) {
   try {
-    const currentUser = await getCurrentUser()
-    const sessionId = request.cookies.get('session_id')?.value
-    if (!currentUser && !sessionId) {
-      return successResponse({
-        cart: null,
-        items: [],
-        subtotal: 0,
-        itemCount: 0,
-      })
+    let currentUser = await getCurrentUser();
+    const sessionId = request.cookies.get("session_id")?.value || null;
+
+    // Verify user still exists in DB
+    if (currentUser) {
+      const dbUser = await db.query.users.findFirst({ where: eq(users.id, currentUser.userId) });
+      if (!dbUser) currentUser = null;
     }
-    const cart = await prisma.cart.findFirst({
+
+    if (!currentUser && !sessionId) {
+      return successResponse({ cart: null, items: [], subtotal: 0, itemCount: 0 });
+    }
+
+    const cart = await db.query.carts.findFirst({
       where: currentUser
-        ? { userId: currentUser.userId }
-        : { sessionId: sessionId },
-      include: {
+        ? eq(carts.userId, currentUser.userId)
+        : eq(carts.sessionId, sessionId!),
+      with: {
         items: {
-          include: {
+          with: {
             product: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                category: true,
-                basePrice: true,
-                images: true,
-                availableSizes: true,
-                stockPerSize: true,
+              columns: {
+                id: true, title: true, slug: true, basePrice: true,
+                comparePrice: true, images: true, stock: true, isActive: true, hasVariants: true,
               },
             },
-            outfit: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                heroImages: true,
-                bundlePrice: true,
-                items: {
-                  orderBy: { position: 'asc' },
-                  select: {
-                    product: {
-                      select: {
-                        id: true,
-                        title: true,
-                        slug: true,
-                        category: true,
-                        basePrice: true,
-                        images: true,
-                        availableSizes: true,
-                        stockPerSize: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
+            variant: true,
           },
         },
       },
-    })
+    });
+
     if (!cart) {
-      return successResponse({
-        cart: null,
-        items: [],
-        subtotal: 0,
-        itemCount: 0,
-      })
+      return successResponse({ cart: null, items: [], subtotal: 0, itemCount: 0 });
     }
-    const transformedItems = cart.items.map((item: any) => {
-      if (item.isBundle && item.outfit) {
-        return {
-          id: item.id,
-          type: 'outfit' as const,
-          outfit: {
-            id: item.outfit.id,
-            title: item.outfit.title,
-            slug: item.outfit.slug,
-            heroImages: item.outfit.heroImages,
-            bundlePrice: item.outfit.bundlePrice,
-            products: item.outfit.items.map((oi: any) => oi.product),
-          },
-          selectedSizes: item.selectedSizes,
-          quantity: item.quantity,
-          price: item.priceSnapshot,
-        }
-      } else if (item.product) {
-        return {
-          id: item.id,
-          type: 'product' as const,
-          product: item.product,
-          selectedSizes: item.selectedSizes,
-          quantity: item.quantity,
-          price: item.priceSnapshot,
-        }
-      }
-      return null
-    }).filter(Boolean)
-    const subtotal = cart.items.reduce(
-      (sum: number, item: { priceSnapshot: number; quantity: number }) => sum + item.priceSnapshot * item.quantity,
-      0
-    )
-    const itemCount = cart.items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0)
+
+    const transformedItems = cart.items.map((item) => ({
+      id: item.id,
+      product: item.product,
+      variant: item.variant || null,
+      quantity: item.quantity,
+      price: item.priceSnapshot,
+    }));
+
+    const subtotal = cart.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
+    const itemCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+
     return successResponse({
-      cart: {
-        id: cart.id,
-        userId: cart.userId,
-        sessionId: cart.sessionId,
-      },
+      cart: { id: cart.id, userId: cart.userId, sessionId: cart.sessionId },
       items: transformedItems,
       subtotal,
       itemCount,
-    })
+    });
   } catch (error) {
-    console.error('Get cart error:', error)
-    logger.error('Get cart error', { error: String(error) })
-    return errorResponse('Something went wrong', 500)
+    logger.error("Get cart error", { error: String(error) });
+    return errorResponse("Something went wrong", 500);
   }
 }
-

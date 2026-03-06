@@ -1,4 +1,5 @@
-import { LuxuryLoader } from "@/components/ui";
+import { Loader } from "@/components/ui";
+
 export default function Loading() {
-  return <LuxuryLoader fullScreen size="lg" />;
+  return <Loader fullScreen size="lg" />;
 }

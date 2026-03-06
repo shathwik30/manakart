@@ -1,5 +1,6 @@
-
-import prisma from '@/lib/prisma'
+import { db } from '@/db'
+import { heroContents } from '@/db/schema'
+import { eq, asc } from 'drizzle-orm'
 import { successResponse, errorResponse } from '@/lib/utils'
 import { logger } from '@/lib/logger'
 
@@ -7,17 +8,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const heroContent = await prisma.heroContent.findMany({
-      where: { isActive: true },
-      orderBy: { position: 'asc' },
-      select: {
-        id: true,
-        title: true,
-        subtitle: true,
-        image: true,
-        ctaText: true,
-        ctaLink: true,
-        position: true,
+    const heroContent = await db.query.heroContents.findMany({
+      where: eq(heroContents.isActive, true),
+      orderBy: [asc(heroContents.position)],
+      columns: {
+        id: true, title: true, subtitle: true, image: true,
+        ctaText: true, ctaLink: true, position: true,
       },
     })
     return successResponse({ heroContent })
@@ -27,4 +23,3 @@ export async function GET() {
     return errorResponse('Something went wrong', 500)
   }
 }
-

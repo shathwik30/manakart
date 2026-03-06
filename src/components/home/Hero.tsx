@@ -1,194 +1,142 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui";
 import { HeroContent } from "@/lib/api";
+
 interface HeroProps {
   slides: HeroContent[];
 }
+
 export function Hero({ slides }: HeroProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      setCurrentSlide(index);
+      setIsAutoPlaying(false);
+      setTimeout(() => setIsAutoPlaying(true), 10000);
+    },
+    []
+  );
+
+  const goToPrev = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  }, [slides.length]);
+
+  const goToNext = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  }, [slides.length]);
+
   useEffect(() => {
     if (!isAutoPlaying || slides.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, slides.length]);
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
-  };
-  const goToPrev = () => {
-    goToSlide((currentSlide - 1 + slides.length) % slides.length);
-  };
-  const goToNext = () => {
-    goToSlide((currentSlide + 1) % slides.length);
-  };
+
   if (slides.length === 0) {
     return (
-      <section className="relative h-screen bg-charcoal-900 flex items-center justify-center">
-        <div className="text-center text-cream-100">
-          <h1 className="font-display text-4xl md:text-6xl mb-4">
-            Succession
-          </h1>
-          <p className="text-lg text-charcoal-300">
-            Timeless elegance awaits
+      <section className="relative h-[200px] md:h-[300px] bg-[#232f3e] flex items-center justify-center">
+        <div className="flex flex-col items-center text-white">
+          <Image
+            src="/logo.png"
+            alt="ManaKart"
+            width={220}
+            height={76}
+            className="h-[60px] md:h-[76px] w-auto object-contain brightness-0 invert"
+            priority
+          />
+          <p className="text-sm md:text-base text-gray-300 mt-2">
+            Shop everything you need
           </p>
         </div>
       </section>
     );
   }
+
   return (
-    <section className="relative h-screen overflow-hidden -mt-20">
-      {}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0"
-        >
-          {}
-          <div className="absolute inset-0">
+    <section className="relative h-[200px] md:h-[300px] overflow-hidden bg-gray-100">
+      {/* Slides */}
+      <div className="relative w-full h-full">
+        {slides.map((slide, index) => (
+          <div
+            key={slide.id || index}
+            className={cn(
+              "absolute inset-0 transition-opacity duration-700 ease-in-out",
+              index === currentSlide ? "opacity-100 z-[2]" : "opacity-0 z-[1]"
+            )}
+          >
             <Image
-              src={slides[currentSlide].image}
-              alt={slides[currentSlide].title}
+              src={slide.image}
+              alt={slide.title}
               fill
-              priority
+              priority={index === 0}
               className="object-cover"
+              sizes="100vw"
             />
-            {}
-            <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/70 via-charcoal-900/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal-900/50 via-transparent to-charcoal-900/30" />
-          </div>
-          {}
-          <div className="relative h-full container-luxury flex items-center">
-            <div className="max-w-2xl pt-20">
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="overline text-gold-400 mb-6"
-              >
-                New Collection
-              </motion.p>
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="font-display text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-6 leading-tight"
-              >
-                {slides[currentSlide].title}
-              </motion.h1>
-              {slides[currentSlide].subtitle && (
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                  className="text-lg md:text-xl text-cream-200 mb-10 max-w-lg leading-relaxed"
+            {/* CTA overlay */}
+            {slide.ctaText && slide.ctaLink && (
+              <div className="absolute inset-0 flex items-end justify-center pb-8 z-[3]">
+                <Link
+                  href={slide.ctaLink}
+                  className="px-6 py-2.5 bg-[#388e3c] hover:bg-[#2e7d32] text-white text-sm font-semibold rounded-lg shadow-lg transition-colors"
                 >
-                  {slides[currentSlide].subtitle}
-                </motion.p>
-              )}
-              {slides[currentSlide].ctaText && slides[currentSlide].ctaLink && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6, duration: 0.6 }}
-                >
-                  <Link href={slides[currentSlide].ctaLink!}>
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      rightIcon={<ArrowRight className="w-5 h-5" />}
-                      className="border-white text-white hover:bg-white hover:text-charcoal-900"
-                    >
-                      {slides[currentSlide].ctaText}
-                    </Button>
-                  </Link>
-                </motion.div>
-              )}
-            </div>
+                  {slide.ctaText}
+                </Link>
+              </div>
+            )}
           </div>
-        </motion.div>
-      </AnimatePresence>
-      {}
+        ))}
+      </div>
+
+      {/* Navigation arrows */}
       {slides.length > 1 && (
         <>
-          <motion.button
+          <button
             onClick={goToPrev}
-            className="absolute bottom-8 left-4 md:left-8 md:top-1/2 md:bottom-auto md:-translate-y-1/2 w-12 h-12 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all z-10 group"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="absolute left-0 top-0 bottom-0 w-12 md:w-16 flex items-center justify-center z-10 hover:bg-black/5 transition-colors group"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-6 h-6 group-hover:animate-pulse" />
-          </motion.button>
-          <motion.button
+            <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 text-gray-600 group-hover:text-gray-900 drop-shadow-md" />
+          </button>
+          <button
             onClick={goToNext}
-            className="absolute bottom-8 right-4 md:right-8 md:top-1/2 md:bottom-auto md:-translate-y-1/2 w-12 h-12 rounded-full backdrop-blur-md bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all z-10 group"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="absolute right-0 top-0 bottom-0 w-12 md:w-16 flex items-center justify-center z-10 hover:bg-black/5 transition-colors group"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-6 h-6 group-hover:animate-pulse" />
-          </motion.button>
+            <ChevronRight className="w-8 h-8 md:w-10 md:h-10 text-gray-600 group-hover:text-gray-900 drop-shadow-md" />
+          </button>
         </>
       )}
-      {}
+
+      {/* Dots indicator */}
       {slides.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-10 backdrop-blur-sm bg-white/5 px-4 py-3 rounded-full border border-white/10">
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
           {slides.map((_, index) => (
-            <motion.button
+            <button
               key={index}
               onClick={() => goToSlide(index)}
               className={cn(
-                "h-1.5 rounded-full transition-all duration-500 relative",
+                "h-2 rounded-full transition-all duration-300",
                 index === currentSlide
-                  ? "w-10 bg-white"
-                  : "w-1.5 bg-white/40 hover:bg-white/60"
+                  ? "bg-[#388e3c] w-6"
+                  : "bg-gray-400 w-2 hover:bg-gray-600"
               )}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
               aria-label={`Go to slide ${index + 1}`}
-            >
-              {index === currentSlide && (
-                <motion.div
-                  layoutId="activeSlide"
-                  className="absolute inset-0 bg-white rounded-full"
-                  initial={false}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                />
-              )}
-            </motion.button>
+            />
           ))}
         </div>
       )}
-      {}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
-        className="absolute bottom-8 right-8 hidden lg:flex flex-col items-center gap-2 text-white/60"
-      >
-        <span className="text-xs tracking-widest uppercase vertical-rl transform rotate-180">
-          Scroll
-        </span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-          className="w-px h-12 bg-gradient-to-b from-white/60 to-transparent"
-        />
-      </motion.div>
     </section>
   );
 }
