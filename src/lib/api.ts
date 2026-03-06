@@ -59,7 +59,7 @@ export const authApi = {
   sendOtp: (email: string) =>
     api<{ message: string }>("/api/auth/send-otp", { method: "POST", body: { email } }),
   verifyOtp: (data: { email: string; otp: string; name?: string; phone?: string }) =>
-    api<{ message: string; user: User; isNewUser: boolean }>("/api/auth/verify-otp", {
+    api<{ message: string; user: User; isNewUser: boolean; needsRegistration?: boolean }>("/api/auth/verify-otp", {
       method: "POST",
       body: data,
     }),
