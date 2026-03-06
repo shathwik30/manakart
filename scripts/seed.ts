@@ -16,6 +16,277 @@ function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+// ─── Relevant Image URLs ───
+
+const SUBCATEGORY_IMAGES: Record<string, string[]> = {
+  // Electronics
+  "Mobiles": [
+    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1592899677112-901b3e5b5111?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585060544812-6b45742d762f?w=800&h=800&fit=crop&q=80",
+  ],
+  "Laptops": [
+    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1547082299-de196ea013d6?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&h=800&fit=crop&q=80",
+  ],
+  "Audio": [
+    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1590658268037-6bf12f032f55?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1589003077984-894e133dabab?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1558089687-f282ffcbc126?w=800&h=800&fit=crop&q=80",
+  ],
+  "Cameras": [
+    "https://images.unsplash.com/photo-1590658268037-6bf12f032f55?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1589656966895-2f33e7653819?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1605464315542-bda44204b12c?w=800&h=800&fit=crop&q=80",
+  ],
+  // Fashion
+  "Men": [
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1523381294911-8d3cead13b95?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1604176354204-9268737828e4?w=800&h=800&fit=crop&q=80",
+  ],
+  "Women": [
+    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&h=800&fit=crop&q=80",
+  ],
+  "Kids": [
+    "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=800&h=800&fit=crop&q=80",
+  ],
+  "Footwear": [
+    "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1595341888016-a392ef81b7de?w=800&h=800&fit=crop&q=80",
+  ],
+  // Home & Kitchen
+  "Furniture": [
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=800&h=800&fit=crop&q=80",
+  ],
+  "Appliances": [
+    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585659722983-3a675dabf23d?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585515320310-259814833e62?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585442041999-d4be0e60e3a1?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1592590846965-2700c6953bb3?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=800&h=800&fit=crop&q=80",
+  ],
+  "Decor": [
+    "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1616046229478-9901c5536a45?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=800&fit=crop&q=80",
+  ],
+  "Storage": [
+    "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1527515637462-cee1653e91e9?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&h=800&fit=crop&q=80",
+  ],
+  // Beauty & Personal Care
+  "Skincare": [
+    "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=800&h=800&fit=crop&q=80",
+  ],
+  "Haircare": [
+    "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585751119414-ef2636f8aede?w=800&h=800&fit=crop&q=80",
+  ],
+  "Makeup": [
+    "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&h=800&fit=crop&q=80",
+  ],
+  "Fragrances": [
+    "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&h=800&fit=crop&q=80",
+  ],
+  // Sports & Fitness
+  "Gym Equipment": [
+    "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517130038641-a774d04afb3c?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=800&fit=crop&q=80",
+  ],
+  "Sportswear": [
+    "https://images.unsplash.com/photo-1562771379-eafdca7a02f8?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&h=800&fit=crop&q=80",
+  ],
+  "Outdoor": [
+    "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1622260614153-03223fb72052?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1552318965-6e6be7484ada?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&h=800&fit=crop&q=80",
+  ],
+  "Yoga": [
+    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1575052814086-f385e2e2ad33?w=800&h=800&fit=crop&q=80",
+  ],
+  // Books & Stationery
+  "Fiction": [
+    "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=800&h=800&fit=crop&q=80",
+  ],
+  "Non-Fiction": [
+    "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=800&h=800&fit=crop&q=80",
+  ],
+  "Office Supplies": [
+    "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=800&h=800&fit=crop&q=80",
+  ],
+  "Art Supplies": [
+    "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1596207891316-23f17feab1b8?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&h=800&fit=crop&q=80",
+  ],
+  // Toys & Games
+  "Board Games": [
+    "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1611371805429-8b5c1b2c34ba?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1606503153255-59d8b8b82176?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1632501641765-e568d28b0015?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1566694271453-390536dd1f0d?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1590615370581-265ae32e8f40?w=800&h=800&fit=crop&q=80",
+  ],
+  "Action Figures": [
+    "https://images.unsplash.com/photo-1608278047522-58806a6ac85b?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1558507652-2d9626c4e67a?w=800&h=800&fit=crop&q=80",
+  ],
+  "Educational": [
+    "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1587654780291-39c9404d7dd0?w=800&h=800&fit=crop&q=80",
+  ],
+  "Outdoor Play": [
+    "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1471286174890-9c112ffca5b4?w=800&h=800&fit=crop&q=80",
+  ],
+  // Grocery & Essentials
+  "Snacks": [
+    "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1599490659213-e2c4c600653c?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1613919113640-25732ec5e61f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&h=800&fit=crop&q=80",
+  ],
+  "Beverages": [
+    "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1597318181409-cf64d0b5d14e?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1563639234920-3c4c55aafc73?w=800&h=800&fit=crop&q=80",
+  ],
+  "Cleaning": [
+    "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?w=800&h=800&fit=crop&q=80",
+  ],
+  "Personal Hygiene": [
+    "https://images.unsplash.com/photo-1584744982491-665216d95f8b?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=800&h=800&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1556228841-a3c527ebefe5?w=800&h=800&fit=crop&q=80",
+  ],
+};
+
+const PARENT_CATEGORY_IMAGES: Record<string, string> = {
+  "Electronics": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=400&fit=crop&q=80",
+  "Fashion": "https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=400&fit=crop&q=80",
+  "Home & Kitchen": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop&q=80",
+  "Beauty & Personal Care": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop&q=80",
+  "Sports & Fitness": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=400&fit=crop&q=80",
+  "Books & Stationery": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=400&fit=crop&q=80",
+  "Toys & Games": "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&h=400&fit=crop&q=80",
+  "Grocery & Essentials": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=400&fit=crop&q=80",
+};
+
+const BRAND_LOGO_MAP: Record<string, string> = {
+  "Samsung": "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=200&h=200&fit=crop&q=80",
+  "Nike": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop&q=80",
+  "boAt": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop&q=80",
+  "Prestige": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&q=80",
+  "Lakme": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&h=200&fit=crop&q=80",
+  "Puma": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=200&h=200&fit=crop&q=80",
+  "Classmate": "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=200&h=200&fit=crop&q=80",
+  "Funskool": "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=200&h=200&fit=crop&q=80",
+  "Tata": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=200&h=200&fit=crop&q=80",
+  "HP": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop&q=80",
+};
+
+const categoryImageCounters: Record<string, number> = {};
+
+function getProductImages(category: string): string[] {
+  const pool = SUBCATEGORY_IMAGES[category];
+  if (!pool || pool.length === 0) {
+    return [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&h=800&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&h=800&fit=crop&q=80",
+    ];
+  }
+  const counter = categoryImageCounters[category] || 0;
+  categoryImageCounters[category] = counter + 3;
+  return [
+    pool[counter % pool.length],
+    pool[(counter + 1) % pool.length],
+    pool[(counter + 2) % pool.length],
+  ];
+}
+
+function getSubcategoryImage(name: string): string {
+  const pool = SUBCATEGORY_IMAGES[name];
+  if (pool && pool.length > 0) return pool[0].replace("w=800&h=800", "w=400&h=400");
+  return PARENT_CATEGORY_IMAGES["Electronics"];
+}
+
 // ─── Data Definitions ───
 
 const PARENT_CATEGORIES = [
@@ -136,9 +407,9 @@ const PRODUCTS: ProductDef[] = [
 ];
 
 const HERO_SLIDES = [
-  { title: "Mega Electronics Sale", subtitle: "Up to 60% off on smartphones, laptops & audio", image: "https://picsum.photos/seed/hero-electronics/1920/600", ctaText: "Shop Now", ctaLink: "/category/electronics", position: 1 },
-  { title: "Fashion Fiesta", subtitle: "New arrivals from Nike, Puma & more — starting at ₹599", image: "https://picsum.photos/seed/hero-fashion/1920/600", ctaText: "Explore", ctaLink: "/category/fashion", position: 2 },
-  { title: "Home Essentials", subtitle: "Everything for your kitchen & home at amazing prices", image: "https://picsum.photos/seed/hero-home/1920/600", ctaText: "Browse", ctaLink: "/category/home-kitchen", position: 3 },
+  { title: "Mega Electronics Sale", subtitle: "Up to 60% off on smartphones, laptops & audio", image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1920&h=600&fit=crop&q=80", ctaText: "Shop Now", ctaLink: "/category/electronics", position: 1 },
+  { title: "Fashion Fiesta", subtitle: "New arrivals from Nike, Puma & more — starting at ₹599", image: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920&h=600&fit=crop&q=80", ctaText: "Explore", ctaLink: "/category/fashion", position: 2 },
+  { title: "Home Essentials", subtitle: "Everything for your kitchen & home at amazing prices", image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&h=600&fit=crop&q=80", ctaText: "Browse", ctaLink: "/category/home-kitchen", position: 3 },
 ];
 
 const REVIEW_DATA = [
@@ -204,7 +475,7 @@ async function seed() {
       name: parent.name,
       slug: parentSlug,
       icon: parent.icon,
-      image: `https://picsum.photos/seed/cat-${parentSlug}/400/400`,
+      image: PARENT_CATEGORY_IMAGES[parent.name] || `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80`,
       showInNav: true,
       position: parent.position,
       isActive: true,
@@ -219,7 +490,7 @@ async function seed() {
         name: childName,
         slug: childSlug,
         icon: parent.icon,
-        image: `https://picsum.photos/seed/cat-${childSlug}/400/400`,
+        image: getSubcategoryImage(childName),
         showInNav: false,
         position: i + 1,
         isActive: true,
@@ -239,7 +510,7 @@ async function seed() {
       id,
       name,
       slug: slugify(name),
-      logo: `https://picsum.photos/seed/brand-${slugify(name)}/200/200`,
+      logo: BRAND_LOGO_MAP[name] || `https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop&q=80`,
       isActive: true,
     });
   }
@@ -259,11 +530,7 @@ async function seed() {
       description: p.description,
       basePrice: p.basePrice,
       comparePrice: p.comparePrice ?? null,
-      images: [
-        `https://picsum.photos/seed/${slug}-1/800/800`,
-        `https://picsum.photos/seed/${slug}-2/800/800`,
-        `https://picsum.photos/seed/${slug}-3/800/800`,
-      ],
+      images: getProductImages(p.category),
       stock: p.stock,
       sku: p.sku,
       isFeatured: p.isFeatured,
