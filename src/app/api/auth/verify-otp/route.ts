@@ -20,11 +20,9 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.toLowerCase().trim()
 
+    // Look for any OTP (verified or unverified) for this email
     const otpRecord = await db.query.otps.findFirst({
-      where: and(
-        eq(otps.email, normalizedEmail),
-        eq(otps.verified, false)
-      ),
+      where: eq(otps.email, normalizedEmail),
       orderBy: [desc(otps.createdAt)],
     })
 
@@ -32,24 +30,28 @@ export async function POST(request: NextRequest) {
       return errorResponse('No OTP found. Please request a new one.', 400)
     }
 
-    if (new Date() > otpRecord.expiresAt) {
-      await db.delete(otps).where(eq(otps.id, otpRecord.id))
-      return errorResponse('OTP has expired. Please request a new one.', 400)
+    // If OTP was already verified (registration step 2), skip code check
+    if (!otpRecord.verified) {
+      if (new Date() > otpRecord.expiresAt) {
+        await db.delete(otps).where(eq(otps.id, otpRecord.id))
+        return errorResponse('OTP has expired. Please request a new one.', 400)
+      }
+
+      if (otpRecord.attempts >= 3) {
+        await db.delete(otps).where(eq(otps.id, otpRecord.id))
+        return errorResponse('Too many attempts. Please request a new OTP.', 400)
+      }
+
+      const isValid = await verifyOTP(otp, otpRecord.code)
+
+      if (!isValid) {
+        await db.update(otps).set({ attempts: otpRecord.attempts + 1 }).where(eq(otps.id, otpRecord.id))
+        return errorResponse('Invalid OTP. Please try again.', 400)
+      }
+
+      // Mark as verified instead of deleting
+      await db.update(otps).set({ verified: true }).where(eq(otps.id, otpRecord.id))
     }
-
-    if (otpRecord.attempts >= 3) {
-      await db.delete(otps).where(eq(otps.id, otpRecord.id))
-      return errorResponse('Too many attempts. Please request a new OTP.', 400)
-    }
-
-    const isValid = await verifyOTP(otp, otpRecord.code)
-
-    if (!isValid) {
-      await db.update(otps).set({ attempts: otpRecord.attempts + 1 }).where(eq(otps.id, otpRecord.id))
-      return errorResponse('Invalid OTP. Please try again.', 400)
-    }
-
-    await db.delete(otps).where(eq(otps.id, otpRecord.id))
 
     let user = await db.query.users.findFirst({
       where: eq(users.email, normalizedEmail),
@@ -59,7 +61,8 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       if (!name || !phone) {
-        return errorResponse('Name and phone are required for new users', 400)
+        // Return success so the client can show the registration form
+        return successResponse({ isNewUser: true, needsRegistration: true })
       }
       if (!isValidPhone(phone)) {
         return errorResponse('Valid 10-digit phone number is required', 400)
@@ -72,6 +75,9 @@ export async function POST(request: NextRequest) {
       user = newUser
       isNewUser = true
     }
+
+    // Clean up OTP now that login/registration is complete
+    await db.delete(otps).where(eq(otps.id, otpRecord.id))
 
     const token = await generateToken({
       userId: user.id,

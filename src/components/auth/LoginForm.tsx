@@ -48,12 +48,8 @@ export function LoginForm() {
     }
     setIsLoading(true);
     try {
-      const response = await authApi.verifyOtp({
-        email,
-        otp,
-        ...(isNewUser && { name, phone }),
-      });
-      if (response.isNewUser && !name) {
+      const response = await authApi.verifyOtp({ email, otp });
+      if (response.needsRegistration) {
         setIsNewUser(true);
         setStep("register");
         setIsLoading(false);
@@ -63,13 +59,7 @@ export function LoginForm() {
       toast.success("Welcome to ManaKart!");
       router.push(redirect);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Invalid OTP";
-      if (message.includes("name") || message.includes("phone")) {
-        setIsNewUser(true);
-        setStep("register");
-      } else {
-        toast.error(message);
-      }
+      toast.error(error instanceof Error ? error.message : "Invalid OTP");
     } finally {
       setIsLoading(false);
     }
